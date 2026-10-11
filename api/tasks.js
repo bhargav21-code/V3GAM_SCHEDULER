@@ -1,6 +1,7 @@
 import { db } from 'hatchable';
+import { requireSupabaseUser } from '../lib/supabase.js';
 
-export const access = 'user';
+export const access = 'public';
 export const methods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
 function json(res, status, body) { return res.status(status).json(body); }
@@ -8,7 +9,7 @@ function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.te
 function cleanTitle(v) { return typeof v === 'string' ? v.trim().slice(0, 180) : ''; }
 
 export default async function (req, res) {
-  const userId = req.user.id;
+  const userId = await requireSupabaseUser(req,res); if(!userId)return;
   if (req.method === 'GET') {
     const date = typeof req.query?.date === 'string' && validDate(req.query.date) ? req.query.date : null;
     const { rows } = await db.query(

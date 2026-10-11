@@ -1,8 +1,10 @@
 import { db, ai } from 'hatchable';
-export const access = 'user';
+import { requireSupabaseUser } from '../lib/supabase.js';
+export const access = 'public';
 export const methods = ['POST'];
 export default async function(req,res){
- const uid=req.user.id, message=String(req.body?.message||'').trim().slice(0,1200);
+ const uid=await requireSupabaseUser(req,res);if(!uid)return;
+ const message=String(req.body?.message||'').trim().slice(0,1200);
  if(!message)return res.status(400).json({error:'Message required.'});
  const {rows:tasks}=await db.query("SELECT id,title,category,duration_minutes,starts_at,due_date,status FROM orbit_tasks WHERE user_id=$1 AND status IN ('planned','active') ORDER BY due_date NULLS LAST,starts_at NULLS LAST LIMIT 100",[uid]);
  let parsed;
