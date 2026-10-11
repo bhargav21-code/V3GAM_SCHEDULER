@@ -529,7 +529,7 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
 <div class="orbit-auth" id="orbitAuth" role="dialog" aria-modal="true" aria-labelledby="orbitAuthTitle">
  <section class="orbit-auth-card"><div class="orbit-auth-mark">✦</div><h1 id="orbitAuthTitle">Your day, in flow.</h1><p id="orbitAuthSubtitle">Sign in to keep your tasks and routines private, synced, and ready on every visit.</p>
- <form id="orbitAuthForm"><label for="orbitEmail">Email address</label><input id="orbitEmail" type="email" autocomplete="email" required placeholder="you@example.com"><div id="orbitPasswordWrap"><label for="orbitPassword">Password</label><input id="orbitPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></div><button class="auth-primary" id="orbitAuthSubmit" type="submit">Sign in</button></form>
+ <form id="orbitAuthForm"><label for="orbitEmail">Email address</label><input id="orbitEmail" type="email" autocomplete="email" required placeholder="you@example.com"><div id="orbitPasswordWrap"><label for="orbitPassword">Password</label><input id="orbitPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></div><div id="orbitOtpWrap" hidden><label for="orbitEmailOtp">Email verification code</label><input id="orbitEmailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="Enter the code from your email"></div><button class="auth-primary" id="orbitAuthSubmit" type="submit">Sign in</button></form>
  <button class="auth-link" id="orbitAuthSwitch" type="button">New here? Create an account</button><button class="auth-link" id="orbitAuthForgot" type="button">Forgot password?</button><p class="auth-msg" id="orbitAuthMessage" aria-live="polite"></p>
  </section>
 </div>
@@ -926,20 +926,25 @@ $('#focusOverlay').addEventListener('click',e=>{if(e.target===$('#focusOverlay')
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){close('focusOverlay');close('agentOverlay')}});
 const weekHead=$('.weekhead'),weekGrid=$('#weekGrid');let syncingWeek=false;[weekHead,weekGrid].forEach(el=>el.addEventListener('scroll',()=>{if(syncingWeek)return;syncingWeek=true;(el===weekHead?weekGrid:weekHead).scrollLeft=el.scrollLeft;syncingWeek=false},{passive:true}));
 // Supabase email/password authentication. Tokens stay in the Supabase client; every private API verifies the bearer token server-side.
-let orbitAuthMode='login', orbitAuthReady=false;
+let orbitAuthMode='login', orbitAuthReady=false, orbitPendingEmail='';
 const orbitAuthPanel=document.getElementById('orbitAuth'), orbitAuthMessage=document.getElementById('orbitAuthMessage');
 function orbitAuthNotice(message,error=false){orbitAuthMessage.textContent=message;orbitAuthMessage.classList.toggle('auth-error',error);}
 function orbitSetAuthMode(mode){
  orbitAuthMode=mode;orbitAuthNotice('');
- const signup=mode==='signup',reset=mode==='reset';
- document.getElementById('orbitAuthTitle').textContent=signup?'Create your Orbit account':reset?'Reset your password':mode==='update'?'Choose a new password':'Your day, in flow.';
- document.getElementById('orbitAuthSubtitle').textContent=signup?'Create a secure account. We’ll email you a verification link before you can sign in.':reset?'We’ll send a secure password-reset link to your email address.':mode==='update'?'Choose a new password for your Orbit account.':'Sign in to keep your tasks and routines private, synced, and ready on every visit.';
- document.getElementById('orbitPasswordWrap').hidden=reset;
- document.getElementById('orbitPassword').required=!reset;
- document.getElementById('orbitPassword').autocomplete=signup?'new-password':reset?'off':'current-password';
- document.getElementById('orbitAuthSubmit').textContent=signup?'Create account':reset?'Send reset link':mode==='update'?'Update password':'Sign in';
- document.getElementById('orbitAuthSwitch').textContent=signup?'Already have an account? Sign in':'New here? Create an account';
- document.getElementById('orbitAuthForgot').hidden=signup||reset||mode==='update';
+ const signup=mode==='signup',reset=mode==='reset',verify=mode==='verify';
+ document.getElementById('orbitOtpWrap').hidden=!verify;
+ document.getElementById('orbitEmail').readOnly=verify;
+ document.getElementById('orbitPasswordWrap').hidden=reset||verify;
+ document.getElementById('orbitEmailOtp').required=verify;
+ document.getElementById('orbitEmailOtp').value='';
+ document.getElementById('orbitAuthTitle').textContent=signup?'Create your Orbit account':verify?'Verify your email':reset?'Reset your password':mode==='update'?'Choose a new password':'Your day, in flow.';
+ document.getElementById('orbitAuthSubtitle').textContent=signup?'Enter your email and password. We’ll send a one-time code to your inbox to finish creating your account.':verify?'Enter the one-time code sent to '+orbitPendingEmail+'.':reset?'We’ll send a secure password-reset link to your email address.':mode==='update'?'Choose a new password for your Orbit account.':'Sign in to keep your tasks and routines private, synced, and ready on every visit.';
+ document.getElementById('orbitPasswordWrap').hidden=reset||verify;
+ document.getElementById('orbitPassword').required=!reset&&!verify;
+ document.getElementById('orbitPassword').autocomplete=signup?'new-password':reset||verify?'off':'current-password';
+ document.getElementById('orbitAuthSubmit').textContent=signup?'Send verification code':verify?'Verify code':reset?'Send reset link':mode==='update'?'Update password':'Sign in';
+ document.getElementById('orbitAuthSwitch').textContent=signup?'Already have an account? Sign in':verify?'Use a different email':'New here? Create an account';
+ document.getElementById('orbitAuthForgot').hidden=signup||verify||reset||mode==='update';
 }
 document.getElementById('orbitAuthSwitch').addEventListener('click',()=>orbitSetAuthMode(orbitAuthMode==='signup'?'login':'signup'));
 document.getElementById('orbitAuthForgot').addEventListener('click',()=>orbitSetAuthMode('reset'));
@@ -949,13 +954,24 @@ document.getElementById('orbitAuthForm').addEventListener('submit',async e=>{
  const submit=document.getElementById('orbitAuthSubmit');submit.disabled=true;submit.textContent='Please wait…';orbitAuthNotice('');
  try{
   let result;
-  if(orbitAuthMode==='signup')result=await window.orbitSupabase.auth.signUp({email,password,options:{emailRedirectTo:location.origin}});
-  else if(orbitAuthMode==='reset')result=await window.orbitSupabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+  if(orbitAuthMode==='signup'){
+   orbitPendingEmail=email;orbitPendingPassword=password;
+   result=await window.orbitSupabase.auth.signUp({email,password,options:{data:{app:'orbit-ai-task'},emailRedirectTo:location.origin}});
+  } else if(orbitAuthMode==='verify'){
+   const token=document.getElementById('orbitEmailOtp').value.trim();
+   result=await window.orbitSupabase.auth.verifyOtp({email:orbitPendingEmail||email,token,type:'signup'});
+  } else if(orbitAuthMode==='reset')result=await window.orbitSupabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
   else if(orbitAuthMode==='update')result=await window.orbitSupabase.auth.updateUser({password});
   else result=await window.orbitSupabase.auth.signInWithPassword({email,password});
   if(result.error)throw result.error;
-  if(orbitAuthMode==='signup'){orbitAuthNotice('Account created. Check your inbox and verify your email, then sign in.');orbitSetAuthMode('login');orbitAuthNotice('Account created. Check your inbox and verify your email, then sign in.');}
-  else if(orbitAuthMode==='reset')orbitAuthNotice('If an account exists for that email, a password-reset link has been sent.');
+  if(orbitAuthMode==='signup'){
+   orbitSetAuthMode('verify');document.getElementById('orbitEmail').value=orbitPendingEmail;
+   orbitAuthNotice('Verification code sent. Check your inbox and enter the code to finish registration.');
+  } else if(orbitAuthMode==='verify'){
+   orbitPendingPassword='';orbitAuthNotice('Email verified! Your Orbit account is ready.');
+   if(result.data?.session){orbitAuthPanel.hidden=true;document.getElementById('orbitSignOut').hidden=false;orbitLoadTasks();}
+   else {orbitSetAuthMode('login');document.getElementById('orbitEmail').value=orbitPendingEmail;orbitAuthNotice('Email verified! Sign in with your new account.');}
+  } else if(orbitAuthMode==='reset')orbitAuthNotice('If an account exists for that email, a password-reset link has been sent.');
   else if(orbitAuthMode==='update'){orbitAuthNotice('Password updated. You can now continue securely.');orbitAuthPanel.hidden=true;document.getElementById('orbitSignOut').hidden=false;}
   else if(result.data?.session){orbitAuthPanel.hidden=true;document.getElementById('orbitSignOut').hidden=false;orbitAuthNotice('');}
   else orbitAuthNotice('Check your email for the verification link, then sign in.');
