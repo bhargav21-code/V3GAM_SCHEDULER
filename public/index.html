@@ -263,14 +263,197 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
 .app.light .diff{background:linear-gradient(145deg,#f4f2ff,#fff);box-shadow:var(--elev1)}
 .app.light .toast.completion-toast{background:linear-gradient(145deg,#fff,#f3f8f5);border-color:#b4e1cd;box-shadow:0 12px 30px rgba(48,91,73,.14)}
 @media(hover:hover){.app.light .task:hover,.app.light .sumcard:hover,.app.light .chartcard:hover,.app.light .insight:hover{transform:translateY(-2px)}}
+/* Workspace dashboard layout inspired by the supplied Neemo reference */
+.workspace-bar{display:none}.dashboard-shell{display:none}
+.workspace-bar button,.workspace-bar input,.project-actions button,.calendar-toolbar button,.calendar-foot button,.tiny-more,.subtle-link{font:inherit}
+.workspace-bar button,.project-actions button,.calendar-toolbar button,.calendar-foot button,.tiny-more,.subtle-link{cursor:pointer}
+.workspace-bar{color:var(--t)}
+.workspace-bar .wb-brand{display:flex;align-items:center;gap:9px;font:800 12px Manrope,sans-serif;letter-spacing:.8px;white-space:nowrap}
+.wb-brand small{display:block;color:var(--m);font:600 8px 'DM Sans',sans-serif;letter-spacing:1.4px;margin-top:2px}
+.wb-symbol{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:linear-gradient(145deg,#b5a6ff,#6f5ce0);color:#fff;box-shadow:0 4px 10px rgba(108,88,220,.24);font-size:16px}
+.workspace-switch,.wb-ai{border:1px solid var(--line);border-radius:13px;min-height:31px;display:flex;align-items:center;gap:7px;padding:4px 9px;background:linear-gradient(145deg,var(--s2),var(--s));color:var(--t);white-space:nowrap}
+.workspace-switch b{display:block;font-size:10px}.workspace-switch small{display:block;color:var(--m);font-size:8px;margin-top:2px}.switch-mark{height:19px;width:19px;display:grid;place-items:center;border-radius:7px;background:#6b55e7;color:white}.switch-caret{color:var(--m);margin-left:3px}
+.wb-ai{color:#ddd5ff;background:linear-gradient(110deg,rgba(121,95,235,.35),rgba(75,54,153,.2));border-color:rgba(169,155,255,.25);font-size:10px}.wb-ai>span:first-child{background:#7657ef;border-radius:7px;width:19px;height:19px;display:grid;place-items:center}.wb-spark{font-size:9px;color:#bdadff}
+.global-search{height:31px;min-width:160px;max-width:380px;flex:1;display:flex;align-items:center;gap:7px;padding:0 11px;background:linear-gradient(145deg,var(--s2),var(--s));border:1px solid var(--line);border-radius:12px;color:var(--m);box-shadow:inset 0 1px rgba(255,255,255,.035)}
+.global-search .search-icon{font-size:18px}.global-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--t);font-size:10px}.global-search input::placeholder{color:var(--m)}.global-search kbd{font:9px 'DM Sans',sans-serif;color:var(--sub);border:1px solid var(--line);padding:2px 4px;border-radius:5px;white-space:nowrap}
+.wb-actions{display:flex;align-items:center;gap:8px}.wb-round{width:31px;height:31px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,var(--s2),var(--s));color:var(--m);font-size:14px;box-shadow:var(--elev1)}
+.wb-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#e6b28c,#98664b 65%,#523a39);border:2px solid rgba(255,255,255,.23);color:white;font-size:9px;font-weight:800;box-shadow:0 0 0 2px rgba(169,155,255,.16)}
+.dashboard-shell{color:var(--t);max-width:1800px;margin:0 auto;padding:4px 0 26px}
+.project-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:4px 2px 15px;min-width:0}
+.project-eyebrow,.panel-kicker{font-size:8px;letter-spacing:1.3px;text-transform:uppercase;font-weight:800;color:var(--m)}
+.project-title-group h1{margin:3px 0 6px;font:600 clamp(22px,2.1vw,31px)/1.15 Manrope,sans-serif;letter-spacing:-1.1px}.title-mark{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;font-size:8px;vertical-align:top;background:linear-gradient(145deg,#fff,#cfc5ff);color:#5742c3;margin-left:4px}
+.project-meta{display:flex;gap:18px;align-items:center;color:var(--m);font-size:9px}.project-meta span{display:flex;gap:5px;align-items:center}.project-meta b{font-size:14px;color:var(--t);font-weight:600}
+.project-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.project-action{border:0;background:transparent;color:var(--m);font-size:9px!important;display:flex;align-items:center;gap:5px;padding:7px 5px;border-radius:8px}.project-action:hover{background:var(--soft);color:var(--t)}
+.collab-stack{display:flex;align-items:center;padding-left:4px}.collab-stack span,.collab-stack small{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;margin-left:-5px;border:2px solid var(--bg);font-size:7px;font-weight:800;color:white;background:linear-gradient(135deg,#e1a879,#6c3d5c)}.collab-stack span:nth-child(2){background:linear-gradient(135deg,#edc4a1,#5d6e9e)}.collab-stack span:nth-child(3){background:linear-gradient(135deg,#91d0c8,#3e6578)}.collab-stack small{background:var(--s3);color:var(--m);font-size:8px}.dash-new{min-height:31px!important;padding:0 12px!important;border-radius:12px!important;font-size:9px!important}
+.workspace-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(225px,260px);gap:13px;align-items:start}
+.workspace-primary{display:grid;gap:12px;min-width:0}
+.overview-row{display:grid;grid-template-columns:minmax(0,1fr) 178px;gap:12px;min-width:0}
+.soft-card{background:linear-gradient(145deg,color-mix(in srgb,var(--s) 92%,#28234c),var(--s));border:1px solid var(--line);border-radius:15px;box-shadow:var(--elev1),inset 0 1px rgba(255,255,255,.045);overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:9px;min-width:0}.panel-head>div:first-child:not(.panel-title-icon){min-width:0}.panel-head h2{font:600 12px Manrope,sans-serif;margin:3px 0 0;letter-spacing:-.2px}.panel-period{margin-left:auto;font-size:9px;color:var(--m);white-space:nowrap}.activity-card,.progress-card{min-height:165px;padding:13px 15px 10px}.activity-chart{height:84px;display:flex;gap:9px;margin-top:6px;position:relative;padding-left:20px}
+.activity-y-labels{position:absolute;left:0;top:0;bottom:16px;display:flex;flex-direction:column;justify-content:space-between;color:var(--sub);font-size:7px}
+.activity-bars{height:100%;width:100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;align-items:end;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 25px,var(--line) 26px,var(--line) 27px)}
+.activity-bar-group{height:100%;display:flex;align-items:center;justify-content:flex-end;flex-direction:column;gap:5px;min-width:0;z-index:1}.activity-bar{width:min(17px,78%);min-height:8px;border-radius:5px 5px 3px 3px;box-shadow:inset 0 1px rgba(255,255,255,.4),0 5px 10px rgba(0,0,0,.12)}.activity-bar.purple{background:linear-gradient(180deg,#9f8cff,#5e27d9 80%)}.activity-bar.gold{background:linear-gradient(180deg,#f5d866,#a68d1a)}.activity-bar-group span{font-size:7px;color:var(--m)}
+.activity-bottom{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:8px;color:var(--m)}.activity-bottom>span:first-child{white-space:nowrap}.legend-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:1px}.purple-dot{background:#a493ff}.green-dot{background:#16bd83}.orange-dot{background:#f57952}.activity-track{height:4px;background:var(--s3);border-radius:7px;flex:1;overflow:hidden}.activity-track span{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#19ca87,#00a66f)}.activity-bottom-right{white-space:nowrap}.activity-bottom-right b{color:#4ee4aa;margin-left:2px}
+.progress-card{display:flex;flex-direction:column}.tiny-more{width:27px;height:27px;border-radius:10px;border:1px solid var(--line);background:var(--s2);color:var(--m);margin-left:auto;font-size:12px!important}.progress-ring{width:86px;height:86px;margin:8px auto 6px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(from -90deg,#ffe33f 0 78%,rgba(169,155,255,.12) 78% 100%);position:relative;box-shadow:0 0 16px rgba(228,203,53,.08)}.progress-ring:before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--s)}.progress-ring>div{z-index:1;text-align:center;display:flex;flex-direction:column;gap:3px}.progress-ring strong{font:600 19px Manrope;letter-spacing:-.7px}.progress-ring small{font-size:7px;color:var(--m)}.progress-stats{display:flex;justify-content:center;gap:14px;margin-top:auto;padding-top:4px}.progress-stats>div{display:grid;gap:2px;text-align:center}.progress-stats span{font-size:7px;color:var(--m)}.progress-stats b{font:600 15px Manrope}.progress-stats>i{width:1px;background:var(--line)}
+.calendar-board{padding:0 13px 8px;min-width:0}.calendar-toolbar{min-height:43px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}.calendar-title,.calendar-tools{display:flex;align-items:center;gap:5px;min-width:0}.calendar-title h2{font:600 12px Manrope;margin:0 7px 0 0}.calendar-title button,.calendar-tools button{border:0;color:var(--m);background:transparent;border-radius:7px;font-size:9px;padding:6px 5px;white-space:nowrap}.calendar-title button:hover,.calendar-tools button:hover{background:var(--soft);color:var(--t)}.calendar-title .calendar-month{font-size:9px;color:var(--t)}.calendar-tools button{font-size:8px}.calendar-tools .calendar-filter{background:var(--s2);border:1px solid var(--line);color:var(--t);padding:5px 9px}.calendar-week-header,.dashboard-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.calendar-week-header{padding:10px 0 7px}.week-date{display:flex;align-items:center;gap:5px;min-width:0;padding-left:4px;color:var(--m);font-size:8px;white-space:nowrap}.week-date strong{font:600 17px Manrope;color:var(--t);letter-spacing:-.7px}.week-date.today strong{color:#b5a5ff}.week-date.today:before{content:"";width:5px;height:5px;background:#9e89ff;border-radius:50%;flex:none}
+.dashboard-calendar{min-height:135px;align-items:stretch}.calendar-day{display:flex;flex-direction:column;gap:5px;min-width:0;min-height:124px;border-right:1px solid var(--line);padding:3px 4px 4px 0}.calendar-day:last-child{border-right:0}.mini-task{width:100%;min-width:0;min-height:30px;padding:5px 5px 5px 6px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(145deg,var(--s2),var(--s));display:flex;align-items:flex-start;gap:5px;text-align:left;color:var(--t);font-size:8px;line-height:1.3;box-shadow:0 2px 5px rgba(0,0,0,.06),inset 0 1px rgba(255,255,255,.04);overflow:hidden}.mini-task:before{content:"";width:4px;height:20px;flex:none;border-radius:4px;background:var(--task-accent,#9884ff);margin-top:1px}.mini-task span{min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.mini-task small{display:block;color:var(--m);font-size:7px;margin-top:3px}.mini-task.study{--task-accent:#a493ff}.mini-task.lecture{--task-accent:#77b8ff}.mini-task.meal{--task-accent:#f5cc72}.mini-task.gym{--task-accent:#4dd5aa}.mini-task.lab{--task-accent:#ff8ba7}.mini-task.done{opacity:.56}.mini-task.done span{text-decoration:line-through}.mini-task.sample{cursor:default;opacity:.8}.calendar-day .day-empty{font-size:8px;color:var(--sub);padding:9px 4px}.calendar-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0 0;border-top:1px solid var(--line);font-size:8px;color:var(--m)}.calendar-foot>span{display:flex;align-items:center;gap:8px}.calendar-foot button{border:0;background:transparent;color:#b5a5ff;font-size:8px;white-space:nowrap}
+.workspace-sidebar{display:grid;gap:12px;min-width:0}.deadlines-card,.meetings-card{padding:13px}.panel-title-icon{height:30px;width:30px;border-radius:10px;display:grid;place-items:center;flex:none;background:linear-gradient(145deg,#7156d7,#352564);color:#e6dcff;font-size:13px;box-shadow:inset 0 1px rgba(255,255,255,.25)}.meeting-icon{background:linear-gradient(145deg,#5d49be,#2e2859)}.panel-head-label{flex:1;min-width:0}.panel-head-label h2{font-size:12px;margin:0}.panel-head-label span{display:block;color:var(--m);font-size:8px;margin-top:4px}
+.ai-promo{position:relative;display:block;width:100%;min-height:85px;text-align:left;overflow:hidden;border:1px solid rgba(169,155,255,.2);border-radius:12px;margin:12px 0;background:radial-gradient(ellipse at 95% 45%,rgba(100,74,218,.5),transparent 48%),linear-gradient(115deg,#19142d,#211a3d 70%,#19172c);color:#fff;padding:10px}.ai-promo-copy{display:flex;flex-direction:column;align-items:flex-start;gap:6px;position:relative;z-index:1}.ai-promo-copy b{font:600 10px Manrope}.ai-promo-copy small{font-size:8px;color:#bdb5df}.ai-promo-copy em{font-style:normal;background:linear-gradient(135deg,#6e4be6,#4f35bb);padding:6px 8px;border:1px solid rgba(255,255,255,.17);border-radius:8px;font-size:8px;box-shadow:0 3px 9px rgba(0,0,0,.2)}.ai-promo-copy em span{margin-left:6px}.ai-orbit{position:absolute;right:8px;top:14px;color:rgba(176,158,255,.24);font-size:60px;text-shadow:0 0 20px rgba(130,99,255,.3);transform:rotate(20deg)}
+.deadline-list{display:grid;gap:2px}.deadline-item{width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:10px 1px 9px;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:7px;align-items:center;color:var(--t)}.deadline-icon{height:21px;width:21px;border-radius:8px;display:grid;place-items:center;font-size:10px;background:rgba(255,146,169,.13);color:#ff9db4}.deadline-item.study .deadline-icon{background:rgba(155,135,255,.16);color:#b8a8ff}.deadline-copy{min-width:0}.deadline-copy small{display:block;color:var(--m);font-size:7px;margin-bottom:3px}.deadline-copy b{display:block;font-size:8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.deadline-percent{font-size:8px;color:var(--m)}.deadline-progress{grid-column:2/4;height:3px;background:var(--s3);border-radius:5px;overflow:hidden;margin-top:-2px}.deadline-progress span{display:block;height:100%;background:linear-gradient(90deg,#a28cff,#6850e8);border-radius:5px}.full-link{margin-top:7px;width:100%;justify-content:center}
+.meeting-list{display:grid;gap:7px;margin-top:12px}.meeting-item{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) 20px;gap:7px;align-items:center;text-align:left;min-height:47px;padding:7px 8px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(145deg,var(--s2),var(--s));color:var(--t)}.meeting-time{font:600 9px Manrope;color:var(--m);border-right:1px solid var(--line);padding-right:6px}.meeting-copy{min-width:0}.meeting-copy small{display:block;font-size:7px;color:var(--m);margin-bottom:3px}.meeting-copy b{display:block;font-size:8px;font-weight:600;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.meeting-badge{font-size:7px;padding:4px 5px;border-radius:6px;background:#4b3b97;color:#e4dbff;text-align:center}.calm-note{display:flex;gap:9px;align-items:flex-start;padding:4px 6px;color:var(--m)}.calm-note>span{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--soft);color:var(--a);flex:none}.calm-note b{font:600 9px Manrope;color:var(--t)}.calm-note p{font-size:8px;line-height:1.45;margin:4px 0 0}
+.mini-agenda{padding:13px}.mini-agenda .panel-head{justify-content:space-between}.subtle-link{border:0;background:transparent;color:#b4a5ff;font-size:8px!important;padding:5px 2px}.today-agenda{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:11px}.agenda-item{display:flex;align-items:center;gap:7px;min-width:0;padding:8px;border-radius:9px;background:var(--s2);border:1px solid var(--line);color:var(--t);text-align:left}.agenda-color{width:4px;height:28px;border-radius:4px;background:var(--task-accent,#a493ff);flex:none}.agenda-item b{font-size:8px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agenda-item small{display:block;color:var(--m);font-size:7px;margin-top:3px}
+.workspace-bar button:hover,.wb-round:hover,.tiny-more:hover,.mini-task:not(.sample):hover,.deadline-item:hover,.meeting-item:hover{filter:brightness(1.12);transform:translateY(-1px)}.workspace-bar button,.wb-round,.tiny-more,.mini-task,.deadline-item,.meeting-item{transition:transform .17s ease,filter .17s ease,border-color .17s ease}
+.app.light .soft-card{background:linear-gradient(145deg,#fff,#f7f5ff);border-color:rgba(91,81,155,.14);box-shadow:0 7px 19px rgba(65,55,129,.075),inset 0 1px #fff}
+.app.light .workspace-bar{background:linear-gradient(100deg,#fff,#f4f1ff);border-color:rgba(80,68,145,.14)}
+.app.light .global-search,.app.light .workspace-switch,.app.light .wb-round{background:linear-gradient(145deg,#fff,#f1efff);border-color:rgba(91,81,155,.15)}
+.app.light .workspace-switch,.app.light .wb-ai{color:var(--t)}.app.light .wb-ai{background:linear-gradient(110deg,#e9e3ff,#f5efff);color:#5945b8;border-color:#d8ceff}
+.app.light .soft-card .progress-ring:before{background:#fff}.app.light .progress-ring{background:conic-gradient(from -90deg,#e3bf25 0 78%,#e8e4f8 78% 100%)}
+.app.light .mini-task{background:linear-gradient(145deg,#fff,#f4f1ff);box-shadow:0 2px 7px rgba(65,55,129,.05),inset 0 1px #fff;border-color:rgba(91,81,155,.13)}.app.light .mini-task.study{background:linear-gradient(135deg,#efebff,#faf8ff)}.app.light .mini-task.lecture{background:linear-gradient(135deg,#e7f3ff,#fbfdff)}.app.light .mini-task.meal{background:linear-gradient(135deg,#fff3d9,#fffaf0)}.app.light .mini-task.gym{background:linear-gradient(135deg,#e2f8ee,#f8fffb)}.app.light .mini-task.lab{background:linear-gradient(135deg,#ffe9ef,#fff8fa)}
+.app.light .ai-promo{background:radial-gradient(ellipse at 95% 45%,rgba(113,84,225,.36),transparent 48%),linear-gradient(115deg,#30245c,#443278 70%,#28244b)}
+.app.light .deadline-item,.app.light .meeting-item,.app.light .agenda-item{background:linear-gradient(145deg,#fff,#f4f2ff);border-color:rgba(91,81,155,.12)}
+.app.light .meeting-badge{background:#ebe5ff;color:#5642b3}.app.light .deadline-progress{background:#e4e0f4}.app.light .activity-track{background:#e6e2f5}
+.rail-bottom{margin-top:auto!important;flex:none!important;border:1px solid transparent!important;background:transparent!important;color:var(--m)!important}.rail-bottom+.rail-bottom{margin-top:-8px!important}.nav .rail-bottom .ni{font-size:16px!important}.nav .rail-bottom .rail-text{font-size:7px!important}.nav .rail-bottom:hover{background:var(--soft)!important;color:var(--a)!important}@media(max-width:800px){.nav .rail-bottom{display:none!important}}
+@media(min-width:801px){
+ html,body{width:100%;height:100%;min-height:100%;margin:0;padding:0;overflow:hidden}
+ .phone{zoom:1!important;width:100vw;height:100dvh;max-width:none;border:0;border-radius:0;margin:0;box-shadow:none}
+ .app{position:relative;width:100%;height:100%;overflow:hidden}
+ .workspace-bar{position:absolute;inset:0 0 auto 0;height:48px;z-index:30;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--line);background:linear-gradient(100deg,rgba(9,10,22,.97),rgba(18,13,38,.96));box-shadow:0 5px 20px rgba(0,0,0,.08)}
+ .workspace-switch{margin-left:5px}.wb-ai{margin-left:-6px}.global-search{margin:0 auto;flex:0 1 330px}.wb-actions{margin-left:auto}
+ .scroll{position:absolute!important;top:48px!important;left:58px!important;right:0!important;bottom:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0 18px 30px!important;overflow:auto!important}
+ .nav{top:48px!important;bottom:0!important;left:0!important;right:auto!important;width:58px!important;height:auto!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:8px!important;padding:17px 7px!important;border-top:0!important;border-right:1px solid var(--line)!important;background:linear-gradient(180deg,var(--s),color-mix(in srgb,var(--s) 88%,#0a0b19))!important;box-shadow:4px 0 18px rgba(0,0,0,.1)!important;z-index:25}
+ .nav:before{content:"";height:1px;width:100%;background:var(--line);margin:0 0 6px}
+ .nav button{width:100%!important;min-height:39px!important;height:39px;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;border:1px solid transparent!important;border-radius:12px!important;color:var(--m);font-size:7px!important}
+ .nav button .ni{font-size:16px!important;line-height:1.1}
+ .nav button.active{color:var(--a)!important;background:linear-gradient(145deg,rgba(140,115,255,.24),rgba(101,76,205,.1))!important;border-color:rgba(169,155,255,.14)!important;box-shadow:0 4px 12px rgba(49,35,125,.14),inset 0 1px rgba(255,255,255,.05)}
+ .mic{display:none!important}
+ .dashboard-shell{display:block!important}
+ .screen#screen-home>.top,.screen#screen-home>.pad{display:none!important}
+ .screen#screen-home{padding-top:0}
+ .project-heading{min-height:84px}
+ .workspace-columns{grid-template-columns:minmax(0,1fr) minmax(218px,24%);gap:12px}
+ .overview-row{grid-template-columns:minmax(0,1fr) 172px}
+ .project-actions{gap:5px}
+ .activity-card,.progress-card{min-height:165px}
+ .calendar-board{min-height:248px}
+ .mini-agenda{display:block}
+ .workspace-sidebar{gap:12px}
+ .toast{left:calc(50% + 29px);bottom:20px}
+}
+@media(min-width:1250px){
+ .workspace-columns{grid-template-columns:minmax(0,1fr) minmax(245px,25%)}
+ .overview-row{grid-template-columns:minmax(0,1fr) 190px}
+ .activity-card,.progress-card{min-height:174px;padding:14px 16px 11px}
+ .activity-chart{height:92px}
+ .calendar-board{min-height:264px;padding-left:15px;padding-right:15px}
+ .calendar-toolbar{min-height:47px}.calendar-week-header{padding-top:12px}
+ .dashboard-calendar{min-height:144px}.calendar-day{min-height:139px}
+ .deadlines-card,.meetings-card{padding:15px}
+ .ai-promo{min-height:89px}
+}
+@media(min-width:801px) and (max-width:1060px){
+ .workspace-columns{grid-template-columns:minmax(0,1fr) 220px}
+ .overview-row{grid-template-columns:minmax(0,1fr) 155px}
+ .project-actions .project-action span{display:none}
+ .project-actions{gap:3px}.calendar-tools button span{display:none}
+ .global-search{max-width:245px}
+ .workspace-switch small{display:none}
+ .activity-card,.progress-card{padding:11px}
+ .activity-bars{gap:5px}
+ .mini-task{font-size:7px;padding:4px}
+}
+@media(max-width:800px){
+ .workspace-bar,.dashboard-shell{display:none!important}
+ .screen#screen-home>.top,.screen#screen-home>.pad{display:block}
+ .nav{grid-template-columns:repeat(4,minmax(0,1fr))!important;padding:4px 8px}
+ .nav button{font-size:9px}
+}
+@media(max-width:430px){.nav{padding-left:4px!important;padding-right:4px!important}.nav button .ni{font-size:18px}.nav button{gap:1px}}
+@media(prefers-reduced-motion:reduce){.workspace-bar button,.wb-round,.tiny-more,.mini-task,.deadline-item,.meeting-item{transition:none}}
 </style></head><body>
 <div class="stage"><aside class="intro"><div class="eyebrow"><span class="brand">✦</span> PRODUCT PREVIEW / 01</div><h1>Your day,<br><span>in flow.</span></h1><p>Meet Orbit, a calmer way to plan. Tell your AI what matters, let it shape the day, then stay present for one task at a time.</p><div class="features"><div class="feature"><i>◷</i> Adaptive scheduling with one-tap task controls</div><div class="feature"><i>✳</i> Voice-first capture and schedule changes</div><div class="feature"><i>▦</i> Week, month, and focus insights in one place</div></div><div class="note">CLICK ANY TASK · TRY THE MIC · SWITCH THE THEME</div></aside>
-<div class="phone"><div class="status"><span>9:41</span><span class="island"></span><span>▮▮ ◔ ▰</span></div><div class="app" id="app"><div class="scroll" id="scroll">
-<section class="screen active" id="screen-home"><header class="top"><div><div class="eyebrow2" id="todayLabel">SUNDAY · OCT 11</div><div class="greeting">Make it a good one<span style="color:var(--a)">.</span></div></div><button class="icon" id="themeToggle" aria-label="Switch theme">☼</button></header><div class="pad"><div class="summary"><div class="sumcard"><div class="sumtop"><span>Focus time</span><span>◷</span></div><div class="num" id="focusSummary">6h 45m</div><div class="muted">planned today</div><div class="track"><span id="focusProgress" style="width:22%"></span></div></div><div class="sumcard"><div class="sumtop"><span>Tasks left</span><span>✦</span></div><div class="num" id="tasksLeft">7 / 9</div><div class="muted" id="tasksSub">You're on track</div><div class="track"><span id="taskProgress" style="width:22%"></span></div></div></div><div class="section"><h2>Today's flow</h2><div class="muted"><b id="completedCount">2</b> completed</div></div><div class="timeline" id="timeline"></div><div class="addstrip"><p><b>Have something new?</b>Let Orbit find the right time for it.</p><button class="plus" id="addTaskBtn" aria-label="Add task">+</button></div></div></section>
+<div class="phone"><div class="status"><span>9:41</span><span class="island"></span><span>▮▮ ◔ ▰</span></div><div class="app" id="app"><div class="workspace-bar" role="banner">
+  <div class="wb-brand"><span class="wb-symbol">✣</span><span>ORBIT <small>WORKSPACE</small></span></div>
+  <button class="workspace-switch" id="workspaceSwitch"><span class="switch-mark">✦</span><span><b>Orbit Pro</b><small>Personal workspace</small></span><span class="switch-caret">⌄</span></button>
+  <button class="wb-ai" id="barAssistant"><span>✳</span> AI Assistant <span class="wb-spark">↗</span></button>
+  <label class="global-search"><span class="search-icon">⌕</span><input id="globalSearch" type="search" placeholder="Search tasks, projects..."><kbd>⌘ K</kbd></label>
+  <div class="wb-actions"><button id="barNotify" aria-label="Notifications" class="wb-round">♧</button><button id="barTheme" aria-label="Toggle light and dark theme" class="wb-round">☼</button><div class="wb-avatar" title="Profile">BB</div></div>
+</div>
+<div class="scroll" id="scroll">
+<section class="screen active" id="screen-home"><section class="dashboard-shell" id="dashboardShell" aria-label="Project dashboard">
+  <div class="project-heading">
+    <div class="project-title-group">
+      <div class="project-eyebrow">PROJECT OVERVIEW</div>
+      <h1>Orbit Task Project <span class="title-mark">✦</span></h1>
+      <div class="project-meta"><span>Focus <b id="dashFocus">6h 45m</b></span><span>Tasks <b id="dashTaskCount">9</b></span><span>Closed <b id="dashClosed">2</b></span></div>
+    </div>
+    <div class="project-actions">
+      <button class="project-action" id="dashboardManage">☷ <span>Manage</span></button>
+      <button class="project-action" id="dashboardActions">◉ <span>Actions</span></button>
+      <button class="project-action" id="dashboardMore">··· <span>More</span></button>
+      <div class="collab-stack" aria-label="Workspace collaborators"><span>BB</span><span>AK</span><span>JM</span><small>+4</small></div>
+      <button class="btn primary dash-new" id="dashboardNew">＋ New</button>
+    </div>
+  </div>
+  <div class="workspace-columns">
+    <main class="workspace-primary">
+      <div class="overview-row">
+        <section class="activity-card soft-card">
+          <div class="panel-head"><div><span class="panel-kicker">YOUR RHYTHM</span><h2>Weekly activity</h2></div><span class="panel-period">This week⌄</span></div>
+          <div class="activity-chart" aria-label="Weekly focus activity chart">
+            <div class="activity-y-labels"><span>6h</span><span>4h</span><span>2h</span></div>
+            <div class="activity-bars" id="dashboardActivityChart">
+              <div class="activity-bar-group"><div class="activity-bar purple" style="height:42%"></div><span>Mon</span></div>
+              <div class="activity-bar-group"><div class="activity-bar purple" style="height:67%"></div><span>Tue</span></div>
+              <div class="activity-bar-group"><div class="activity-bar gold" style="height:32%"></div><span>Wed</span></div>
+              <div class="activity-bar-group"><div class="activity-bar purple" style="height:84%"></div><span>Thu</span></div>
+              <div class="activity-bar-group"><div class="activity-bar purple" style="height:58%"></div><span>Fri</span></div>
+              <div class="activity-bar-group"><div class="activity-bar gold" style="height:48%"></div><span>Sat</span></div>
+              <div class="activity-bar-group"><div class="activity-bar purple" style="height:25%"></div><span>Sun</span></div>
+            </div>
+          </div>
+          <div class="activity-bottom"><span><i class="legend-dot purple-dot"></i>75% Activity</span><div class="activity-track"><span style="width:75%"></span></div><span class="activity-bottom-right">+12% <b>↗</b></span></div>
+        </section>
+        <section class="progress-card soft-card">
+          <div class="panel-head"><div><span class="panel-kicker">MOMENTUM</span><h2>Task progress</h2></div><button class="tiny-more" id="progressMore" aria-label="Progress options">···</button></div>
+          <div class="progress-ring" id="dashboardRing"><div><strong id="dashboardPercent">22%</strong><small>Task progress</small></div></div>
+          <div class="progress-stats"><div><span>Tasks</span><b id="dashboardTotal2">9</b></div><i></i><div><span>Closed</span><b id="dashboardClosed2">2</b></div></div>
+        </section>
+      </div>
+      <section class="calendar-board soft-card">
+        <div class="calendar-toolbar">
+          <div class="calendar-title"><h2>Tasks</h2><button id="calendarPrev" aria-label="Previous week">‹</button><button id="calendarMonth" class="calendar-month">This week⌄</button><button id="calendarNext" aria-label="Next week">›</button></div>
+          <div class="calendar-tools"><button id="calendarStatus">☷ <span>Status</span></button><button id="calendarCustomize">◉ <span>Customize</span></button><button id="calendarView">▤ <span>View</span></button><button class="calendar-filter" id="calendarFilter">⚲ Filter</button></div>
+        </div>
+        <div class="calendar-week-header" id="dashboardWeekHeader"></div>
+        <div class="dashboard-calendar" id="dashboardCalendar" aria-label="Weekly tasks calendar"></div>
+        <div class="calendar-foot"><span><i class="legend-dot purple-dot"></i>Study <i class="legend-dot green-dot"></i>Wellness <i class="legend-dot orange-dot"></i>Projects</span><button id="calendarOpenPlan">Open full plan ↗</button></div>
+      </section>
+      <section class="mini-agenda soft-card">
+        <div class="panel-head"><div><span class="panel-kicker">STAY IN FLOW</span><h2>Today's focus</h2></div><button id="focusCurrent" class="subtle-link">Open focus mode ↗</button></div>
+        <div class="today-agenda" id="dashboardTodayAgenda"></div>
+      </section>
+    </main>
+    <aside class="workspace-sidebar">
+      <section class="deadlines-card soft-card">
+        <div class="panel-head"><div class="panel-title-icon">◷</div><div class="panel-head-label"><h2>Deadlines</h2><span>Keep important work moving</span></div><button class="tiny-more" id="deadlineMore" aria-label="Deadline options">···</button></div>
+        <button class="ai-promo" id="deadlineAi"><span class="ai-promo-copy"><b>Optimize with AI</b><small>Find a little more breathing room.</small><em>Start optimizing <span>↗</span></em></span><span class="ai-orbit" aria-hidden="true">✣</span></button>
+        <div class="deadline-list" id="deadlineList"></div>
+        <button class="subtle-link full-link" id="allDeadlines">View all tasks ↗</button>
+      </section>
+      <section class="meetings-card soft-card">
+        <div class="panel-head"><div class="panel-title-icon meeting-icon">◉</div><div class="panel-head-label"><h2>Up next</h2><span>Your upcoming schedule</span></div><button class="tiny-more" id="meetingMore" aria-label="Schedule options">···</button></div>
+        <div class="meeting-list" id="meetingList"></div>
+        <button class="subtle-link full-link" id="scheduleAssistant">Reshape my day ✦</button>
+      </section>
+      <section class="calm-note"><span>✦</span><div><b>Progress, not perfection.</b><p>Orbit keeps your plan flexible as your day changes.</p></div></section>
+    </aside>
+  </div>
+</section>
+<header class="top"><div><div class="eyebrow2" id="todayLabel">SUNDAY · OCT 11</div><div class="greeting">Make it a good one<span style="color:var(--a)">.</span></div></div><button class="icon" id="themeToggle" aria-label="Switch theme">☼</button></header><div class="pad"><div class="summary"><div class="sumcard"><div class="sumtop"><span>Focus time</span><span>◷</span></div><div class="num" id="focusSummary">6h 45m</div><div class="muted">planned today</div><div class="track"><span id="focusProgress" style="width:22%"></span></div></div><div class="sumcard"><div class="sumtop"><span>Tasks left</span><span>✦</span></div><div class="num" id="tasksLeft">7 / 9</div><div class="muted" id="tasksSub">You're on track</div><div class="track"><span id="taskProgress" style="width:22%"></span></div></div></div><div class="section"><h2>Today's flow</h2><div class="muted"><b id="completedCount">2</b> completed</div></div><div class="timeline" id="timeline"></div><div class="addstrip"><p><b>Have something new?</b>Let Orbit find the right time for it.</p><button class="plus" id="addTaskBtn" aria-label="Add task">+</button></div></div></section>
 <section class="screen" id="screen-plan"><div class="pagehead"><div class="eyebrow2">YOUR BIG PICTURE</div><h1>Plan ahead</h1><p>A flexible plan for the things that matter.</p></div><div class="seg" role="tablist"><button class="active" data-plan="week" role="tab" aria-selected="true">Week view</button><button data-plan="month" role="tab" aria-selected="false">Month heatmap</button></div><div id="weekPane"><div class="weekhead"><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div><div>SUN</div></div><div class="weekgrid" id="weekGrid"></div><div class="legend"><span><i style="--c:#a296ff"></i>Study</span><span><i style="--c:#82b9f6"></i>Lecture</span><span><i style="--c:#f3c779"></i>Meals</span><span><i style="--c:#78d6b0"></i>Wellness</span><span><i style="--c:#f18e9f"></i>Projects</span></div><div class="insight"><b>✦ Orbit noticed a pattern</b><p>Your best study blocks are between 9–11 AM. Two deep-work sessions are protected before lunch.</p></div></div><div id="monthPane" style="display:none"><div class="monthcard"><div class="monthtop"><b>October 2026</b><span>Focus consistency</span></div><div class="monthgrid" id="monthGrid"></div><div class="legend" style="justify-content:flex-end;padding:12px 0 0">Less <i style="--c:#8c7bff30"></i><i style="--c:#8c7bff70"></i><i style="--c:#8c7bff"></i> More</div></div><div class="insight"><b>✦ Your month at a glance</b><p>You planned most consistently in the second week. Keep the rhythm—not every day needs to be perfect.</p></div></div></section>
 <section class="screen" id="screen-add"><div class="pagehead"><div class="eyebrow2">CAPTURE A THOUGHT</div><h1>Add a task</h1><p>Drop it here. Orbit will turn it into a plan.</p></div><div class="form"><button class="voicebtn" id="recordTaskBtn"><span class="wave"><i></i><i></i><i></i><i></i><i></i></span><span id="recordLabel">Describe it with your voice</span> ↗</button><div class="formcard"><form id="taskForm"><div class="field"><label for="taskName">TASK NAME</label><input id="taskName" required maxlength="90" placeholder="e.g. Finish my lab report"></div><div class="two"><div class="field"><label for="taskCategory">CATEGORY</label><select id="taskCategory"><option value="study">Study</option><option value="lab">Project / lab</option><option value="lecture">Lecture</option><option value="gym">Wellness</option><option value="meal">Meal</option></select></div><div class="field"><label for="taskDuration">DURATION</label><select id="taskDuration"><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option></select></div></div><div class="field"><label for="taskWhen">WHEN SHOULD IT HAPPEN?</label><select id="taskWhen"><option value="flexible">Find the best time (AI)</option><option value="morning">Morning · before 12 PM</option><option value="afternoon">Afternoon · 12–5 PM</option><option value="evening">Evening · after 5 PM</option></select></div><div class="field"><label for="taskNote">NOTES (OPTIONAL)</label><textarea id="taskNote" placeholder="Anything Orbit should keep in mind?"></textarea></div><button class="btn primary full" type="submit">✦ &nbsp; Build my plan</button></form></div><div class="parsed" id="parsedCard"><div class="parsedtop">✓ &nbsp; AI PARSED TASK</div><h3 id="parsedTitle">Finish lab report</h3><p id="parsedText">1 hour · Project · Suggested for a focused afternoon.</p><div class="tags"><span class="tag">✓ Time-aware</span><span class="tag">✓ Flexible buffer</span><span class="tag">✦ Smart slot found</span></div><button class="btn primary full" id="confirmTaskBtn">Add to today's plan</button></div><button class="back" id="backHomeBtn">← &nbsp; Back to today</button></div></section>
 <section class="screen" id="screen-stats"><div class="pagehead"><div class="eyebrow2">SMALL STEPS ADD UP</div><h1>Your progress</h1><p>Less pressure. More proof you're moving.</p></div><div class="statsline"><b style="font-size:11px">This week</b><span class="muted">Oct 5 – 11 ⌄</span></div><div class="score"><label>WEEKLY PLANNING SCORE</label><div class="scoreline"><div class="scorenum">82<small> / 100</small></div><span class="up">↗ 8% vs last week</span></div><div class="track" style="height:6px;background:#8c7bff20"><span style="width:82%"></span></div></div><div class="chartcard"><h3>Planned vs. actual</h3><div class="cardsub">Hours spent on the plan, by day</div><div class="bars" id="barChart"></div><div class="chartlegend"><span><i></i>Planned</span><span><i style="background:#d0c9ff"></i>Actual</span></div></div><div class="streaks"><div class="streak">🔥<strong>6 days</strong><span>Current streak</span></div><div class="streak">✦<strong>18.5h</strong><span>Focused this week</span></div></div><div class="chartcard"><h3>Time by category</h3><div class="cardsub">Where your energy went · 18.5 hours</div><div class="donutrow"><div class="donut"><div class="donutcenter">18.5<small>hours</small></div></div><div class="catlegend"><div><i style="--c:var(--a)"></i><span>Study</span><b>33%</b></div><div><i style="--c:var(--blue)"></i><span>Lectures</span><b>22%</b></div><div><i style="--c:var(--green)"></i><span>Wellness</span><b>16%</b></div><div><i style="--c:var(--gold)"></i><span>Meals</span><b>14%</b></div><div><i style="--c:var(--pink)"></i><span>Projects</span><b>15%</b></div></div></div></div><div class="insight"><b>✦ A gentle nudge</b><p>You complete more tasks when you leave a 15-minute buffer between classes and deep work. Orbit will keep protecting that breathing room.</p></div></section></div>
-<nav class="nav" aria-label="Main navigation"><button class="active" data-screen="home"><span class="ni">⌂</span>Today</button><button data-screen="plan"><span class="ni">▦</span>Plan</button><button data-screen="stats"><span class="ni">◔</span>Insights</button></nav><button class="mic" id="agentBtn" aria-label="Open Orbit voice assistant">✳</button><div class="toast" id="toast" role="status" aria-live="polite"></div>
+<nav class="nav" aria-label="Main navigation"><button class="active" data-screen="home"><span class="ni">⌂</span>Today</button><button data-screen="plan"><span class="ni">▦</span>Plan</button><button data-screen="add"><span class="ni">＋</span>Add</button><button data-screen="stats"><span class="ni">◔</span>Insights</button><button class="rail-bottom" id="railAssistant" aria-label="Open Orbit assistant"><span class="ni">✳</span><span class="rail-text">Orbit AI</span></button><button class="rail-bottom" id="railTheme" aria-label="Toggle theme"><span class="ni" id="railThemeIcon">☼</span><span class="rail-text">Theme</span></button></nav><button class="mic" id="agentBtn" aria-label="Open Orbit voice assistant">✳</button><div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="overlay" id="agentOverlay" aria-hidden="true"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="agentTitle"><div class="handle"></div><div class="sheethead"><div><div class="eyebrow2">ORBIT ASSISTANT</div><h2 id="agentTitle">Let's reshape your day.</h2></div><button class="close" data-close="agentOverlay" aria-label="Close assistant">×</button></div><div class="chat" id="chatWindow"><div class="bubble ai"><span class="ailabel">✦ ORBIT</span>I've left a little breathing room in your plan. What would you like to change?</div><button class="chip" id="examplePrompt">“Push everything after 6pm to tomorrow.”</button></div><div class="diff" id="diffCard"><div class="difftitle"><span>WHAT-IF PREVIEW</span><span style="color:var(--green)">No changes yet</span></div><div class="diffrow"><div class="before">Dinner<small>Today · 6:00 PM</small></div><div class="arrow">→</div><div class="after">Dinner<small>Tomorrow · 6:00 PM</small></div></div><div class="diffrow"><div class="before">Revision sprint<small>Today · 7:00 PM</small></div><div class="arrow">→</div><div class="after">Revision sprint<small>Tomorrow · 7:00 PM</small></div></div><div class="diffrow"><div class="before">Lab report buffer<small>Today · 8:15 PM</small></div><div class="arrow">→</div><div class="after">Lab report buffer<small>Tomorrow · 8:15 PM</small></div></div></div><button class="btn primary full" id="applyDiffBtn" style="display:none;margin-bottom:10px">Apply new schedule ↗</button><div class="compose"><input class="chatinput" id="agentInput" placeholder="Ask Orbit to move, add, or…" aria-label="Message Orbit"><button class="send" id="sendAgent" aria-label="Send message">↑</button></div><div class="footnote">Your schedule won't change until you tap Apply.</div></section></div>
 <div class="overlay focusoverlay" id="focusOverlay" aria-hidden="true"><section class="focusview" role="dialog" aria-modal="true" aria-labelledby="focusTitle"><div class="focustop"><button class="icon" id="closeFocus" aria-label="Close task focus">×</button><div class="focuscount">FOCUS MODE · <span id="focusIndex">TASK 03</span></div><button class="icon" id="focusMore" aria-label="Task options">···</button></div><div class="focusbody"><div class="focusicon" id="focusIcon">✦</div><div class="focuscat" id="focusCategory">DEEP WORK</div><h1 class="focustitle" id="focusTitle">ADA problem set</h1><div class="focusmeta" id="focusMeta">Quiet time, one problem at a time.<br>You've got this.</div><div class="countdown" id="countdown">01:30:00</div><div class="caption">TIME LEFT IN THIS BLOCK</div><div class="focusprogress"><span id="focusTimerProgress"></span></div></div><div class="voicehint"><b>◉</b> Say “done”, “snooze 10 minutes”, or “skip”</div><div class="focusactions"><button class="btn primary" id="focusDone">✓ &nbsp; Done</button><button class="btn" id="focusSnooze">Ⅱ &nbsp; Snooze</button><button class="btn" id="focusSkip">↷ &nbsp; Skip</button></div><button class="quickvoice" id="focusVoice">✳ &nbsp; Reply with your voice</button></section></div>
 <script>
@@ -296,7 +479,7 @@ function clock(s){let a=s.split(':').map(Number),h=a[0]%12||12;return h+':'+Stri
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const n=$('#toast');clearTimeout(state.toast);n.classList.remove('completion-toast');n.textContent=s;n.classList.add('show');state.toast=setTimeout(()=>n.classList.remove('show'),2300)}
 function go(screen){state.screen=screen;$$('.screen').forEach(x=>x.classList.toggle('active',x.id==='screen-'+screen));$$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===screen));$('#scroll').scrollTop=0}
-$$('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.screen)));
+$$('.nav button[data-screen]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.screen)));
 const date=new Date(), days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 $('#todayLabel').textContent=days[date.getDay()].toUpperCase()+' · '+date.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();
 $('#themeToggle').addEventListener('click',()=>{state.theme=state.theme==='dark'?'light':'dark';$('#app').classList.toggle('light',state.theme==='light');$('#themeToggle').textContent=state.theme==='light'?'☾':'☼';$('#themeToggle').setAttribute('aria-label',state.theme==='light'?'Switch to dark theme':'Switch to light theme');toast(state.theme==='light'?'Light theme enabled':'Dark theme enabled')});
@@ -314,6 +497,7 @@ if(!now){const n=document.createElement('div');n.className='now';n.innerHTML='<i
 const done=today.filter(t=>t.status==='done').length,left=today.filter(t=>t.status!=='done').length,total=today.reduce((n,t)=>n+t.duration,0);
 $('#completedCount').textContent=done;$('#tasksLeft').textContent=left+' / '+today.length;$('#tasksSub').textContent=left<=2?'Almost there':'You’re on track';$('#taskProgress').style.width=(done/today.length*100)+'%';
 $('#focusSummary').textContent=Math.floor(total/60)+'h '+total%60+'m';$('#focusProgress').style.width=(done/today.length*100)+'%';
+renderDashboard();
 }
 $('#timeline').addEventListener('click',e=>{const b=e.target.closest('[data-task]');if(b)openFocus(Number(b.dataset.task))});
 function openFocus(id){const t=tasks.find(x=>x.id===id);if(!t)return;state.focused=id;$('#focusIcon').textContent=icons[t.category]||'✦';$('#focusCategory').textContent=names[t.category].toUpperCase()+' · '+t.duration+' MIN';$('#focusTitle').textContent=t.title;$('#focusMeta').textContent=t.detail||'One thing at a time. You have got this.';$('#focusIndex').textContent='TASK '+String(id).padStart(2,'0');state.focusEnd=Date.now()+t.duration*60000;clearInterval(state.focusTicker);function tickFocus(){const left=Math.max(0,state.focusEnd-Date.now());const sec=Math.floor(left/1000);$('#countdown').textContent=String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');$('#focusTimerProgress').style.width=(t.status==='done'?100:Math.max(0,Math.min(100,(1-left/(t.duration*60000))*100)))+'%';if(left===0)clearInterval(state.focusTicker)}tickFocus();state.focusTicker=setInterval(tickFocus,1000);$('#focusOverlay').classList.add('open');$('#focusOverlay').setAttribute('aria-hidden','false')}
@@ -337,6 +521,105 @@ function renderWeek(){const el=$('#weekGrid');el.innerHTML='';const todayIndex=(
 $$('[data-plan]').forEach(b=>b.addEventListener('click',()=>{$$('[data-plan]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-selected',x===b?'true':'false')});$('#weekPane').style.display=b.dataset.plan==='week'?'block':'none';$('#monthPane').style.display=b.dataset.plan==='month'?'block':'none'}));
 function renderMonth(){const el=$('#monthGrid');el.innerHTML='';['M','T','W','T','F','S','S'].forEach(s=>{const d=document.createElement('div');d.className='weekday';d.textContent=s;el.appendChild(d)});const offset=(new Date(2026,9,1).getDay()+6)%7;for(let i=0;i<offset;i++){const x=document.createElement('div');x.className='heat blank';el.appendChild(x)}for(let d=1;d<=31;d++){const level=(d*7+3)%5,x=document.createElement('div');x.className='heat '+(level?'l'+level:'')+(d===date.getDate()?' today':'');x.textContent=d;x.title=d+' October · '+(level?level*25+'% focus':'Rest day');el.appendChild(x)}}
 function renderBars(){const el=$('#barChart');el.innerHTML='';[[5,4],[6,5],[4,3],[6,6],[5,4],[3,2],[4,3]].forEach((v,i)=>{const x=document.createElement('div');x.className='bargrp';x.innerHTML='<div class="barpair"><span class="bar" style="height:'+(v[0]/6*100)+'%"></span><span class="bar actual" style="height:'+(v[1]/6*100)+'%"></span></div><span class="barlabel">'+['M','T','W','T','F','S','S'][i]+'</span>';el.appendChild(x)})}
+let dashboardWeekOffset=0;let dashboardFilter='';
+function renderDashboard(){
+ const total=tasks.filter(t=>t.status!=='skipped').length,closed=tasks.filter(t=>t.status==='done').length,percent=Math.round(closed/Math.max(total,1)*100);
+ $('#dashFocus').textContent=$('#focusSummary').textContent;
+ $('#dashTaskCount').textContent=total;$('#dashClosed').textContent=closed;
+ $('#dashboardTotal2').textContent=total;$('#dashboardClosed2').textContent=closed;
+ $('#dashboardPercent').textContent=percent+'%';
+ $('#dashboardRing').style.background='conic-gradient(from -90deg,#ffe33f 0 '+percent+'%,rgba(169,155,255,.12) '+percent+'% 100%)';
+ $('#dashboardPercent').style.color='var(--t)';
+ const start=new Date(date);const weekday=(date.getDay()+6)%7;start.setDate(date.getDate()-weekday+dashboardWeekOffset*7);
+ const dnames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+ $('#dashboardWeekHeader').innerHTML='';$('#dashboardCalendar').innerHTML='';
+ const q=dashboardFilter.trim().toLowerCase();
+ const cats={study:'study',lecture:'lecture',meal:'meal',gym:'gym',lab:'lab'};
+ const samples=typeof weekSamples!=='undefined'?weekSamples:[];
+ const allMatch=tasks.filter(t=>t.status!=='skipped'&&(!q||(t.title+' '+names[t.category]+' '+t.detail).toLowerCase().includes(q)));
+ for(let i=0;i<7;i++){
+  const d=new Date(start);d.setDate(start.getDate()+i);
+  const iso=d.toDateString(),isToday=iso===date.toDateString();
+  const hd=document.createElement('div');hd.className='week-date'+(isToday?' today':'');
+  hd.innerHTML='<strong>'+d.getDate()+'</strong><span>'+dnames[i]+'</span>';$('#dashboardWeekHeader').appendChild(hd);
+  const cell=document.createElement('div');cell.className='calendar-day';
+  let items=[];
+  if(isToday && dashboardWeekOffset===0){
+   items=allMatch.filter(t=>t.day===0&&t.status!=='skipped').sort((a,b)=>mins(a.start)-mins(b.start)).map(t=>({id:t.id,title:t.title,start:t.start,duration:t.duration,category:cats[t.category],done:t.status==='done'}));
+  } else if(!q && samples[i]){
+   items=samples[i].map((s,j)=>({id:null,title:s.t,start:['09:00','11:30','14:00','16:00'][j%4],duration:45,category:({'study':'study','blue':'lecture','gold':'meal','green':'gym','pink':'lab'})[s.c]||'study',done:false}));
+  }
+  if(q&&!isToday)items=allMatch.filter(t=>t.day===i+dashboardWeekOffset*7).map(t=>({id:t.id,title:t.title,start:t.start,duration:t.duration,category:cats[t.category],done:t.status==='done'}));
+  if(items.length){
+   items.slice(0,3).forEach(t=>{
+    const b=document.createElement('button');b.className='mini-task '+(t.category||'study')+(t.done?' done':'');b.type='button';b.title=t.title+' · '+clock(t.start);b.innerHTML='<span>'+esc(t.title)+'<small>'+clock(t.start)+' · '+t.duration+'m</small></span>';
+    if(t.id)b.dataset.task=String(t.id);else {b.classList.add('sample');b.setAttribute('aria-label',t.title+' sample schedule');}
+    cell.appendChild(b);
+   });
+   if(items.length>3){const more=document.createElement('button');more.className='calendar-tools-button';more.textContent='+'+(items.length-3)+' more';more.style.cssText='border:0;background:transparent;color:var(--m);font-size:8px;padding:4px;cursor:pointer';more.addEventListener('click',()=>{go('plan');toast('Open the full plan to see all tasks')});cell.appendChild(more)}
+  }else{const empty=document.createElement('span');empty.className='day-empty';empty.textContent=q?'No matches':'Open space';cell.appendChild(empty)}
+  $('#dashboardCalendar').appendChild(cell);
+ }
+ const deadline=$('#deadlineList');deadline.innerHTML='';
+ const upcoming=allMatch.filter(t=>t.status!=='done').sort((a,b)=>mins(a.start)-mins(b.start)).slice(0,3);
+ upcoming.forEach((t,i)=>{
+  const b=document.createElement('button');b.className='deadline-item '+t.category;b.type='button';b.dataset.task=String(t.id);
+  const prog=t.status==='active'?54:t.status==='planned'?Math.max(22,Math.min(70,Math.round((mins(t.start)/1440)*100))):100;
+  b.innerHTML='<span class="deadline-icon">'+(t.category==='study'?'✦':t.category==='lab'?'⌘':t.category==='gym'?'↗':t.category==='lecture'?'▤':'◒')+'</span><span class="deadline-copy"><small>'+(i===0?'UP NEXT':i===1?'ON YOUR LIST':'COMING UP')+'</small><b>'+esc(t.title)+'</b></span><span class="deadline-percent">'+prog+'%</span><span class="deadline-progress"><span style="width:'+prog+'%"></span></span>';
+  deadline.appendChild(b);
+ });
+ if(!upcoming.length)deadline.innerHTML='<div class="day-empty">All caught up — nicely done.</div>';
+ const meeting=$('#meetingList');meeting.innerHTML='';
+ const meetings=allMatch.filter(t=>t.status!=='done').sort((a,b)=>mins(a.start)-mins(b.start)).slice(0,2);
+ meetings.forEach((t,i)=>{
+  const b=document.createElement('button');b.className='meeting-item';b.type='button';if(t.id)b.dataset.task=String(t.id);
+  const end=mins(t.start)+t.duration,et=String(Math.floor((end%1440)/60)).padStart(2,'0')+':'+String(end%60).padStart(2,'0');
+  b.innerHTML='<span class="meeting-time">'+clock(t.start).replace(' ','<br>')+'</span><span class="meeting-copy"><small>'+(i===0?'UP NEXT · '+t.duration+' MIN':'LATER TODAY · '+t.duration+' MIN')+'</small><b>'+esc(t.title)+'</b></span><span class="meeting-badge">'+(t.status==='active'?'Now':'Planned')+'</span>';
+  meeting.appendChild(b);
+ });
+ if(!meetings.length)meeting.innerHTML='<div class="day-empty">Nothing pending. Take a break.</div>';
+ const agenda=$('#dashboardTodayAgenda');agenda.innerHTML='';
+ allMatch.filter(t=>t.day===0&&t.status!=='skipped').sort((a,b)=>mins(a.start)-mins(b.start)).slice(0,3).forEach(t=>{
+  const b=document.createElement('button');b.className='agenda-item';b.type='button';b.dataset.task=String(t.id);b.style.setProperty('--task-accent','var(--c)');b.innerHTML='<i class="agenda-color" style="--task-accent:'+(t.category==='gym'?'#4dd5aa':t.category==='lab'?'#ff8ba7':t.category==='lecture'?'#77b8ff':t.category==='meal'?'#f5cc72':'#a493ff')+'"></i><span><b>'+esc(t.title)+'</b><small>'+clock(t.start)+' · '+t.duration+' min</small></span>';agenda.appendChild(b);
+ });
+}
+function openDashboardTask(e){const b=e.target.closest('[data-task]');if(b&&b.dataset.task)openFocus(Number(b.dataset.task))}
+$('#dashboardCalendar').addEventListener('click',openDashboardTask);
+$('#deadlineList').addEventListener('click',openDashboardTask);
+$('#meetingList').addEventListener('click',openDashboardTask);
+$('#dashboardTodayAgenda').addEventListener('click',openDashboardTask);
+$('#globalSearch').addEventListener('input',e=>{dashboardFilter=e.target.value;renderDashboard()});
+$('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Escape'){e.target.value='';dashboardFilter='';renderDashboard()}});
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(window.innerWidth>800)$('#globalSearch').focus();else go('add')}});
+$('#barTheme').addEventListener('click',()=>{$('#themeToggle').click();$('#barTheme').textContent=state.theme==='light'?'☾':'☼'});
+$('#themeToggle').addEventListener('click',()=>{$('#barTheme').textContent=state.theme==='light'?'☾':'☼';});
+$('#barAssistant').addEventListener('click',()=>$('#agentBtn').click());
+$('#railAssistant').addEventListener('click',()=>$('#agentBtn').click());
+$('#railTheme').addEventListener('click',()=>{$('#themeToggle').click();$('#railThemeIcon').textContent=state.theme==='light'?'☾':'☼';});
+$('#themeToggle').addEventListener('click',()=>{$('#railThemeIcon').textContent=state.theme==='light'?'☾':'☼';});
+$('#scheduleAssistant').addEventListener('click',()=>$('#agentBtn').click());
+$('#deadlineAi').addEventListener('click',()=>$('#agentBtn').click());
+$('#dashboardNew').addEventListener('click',()=>{go('add');$('#taskName').focus()});
+$('#dashboardManage').addEventListener('click',()=>{go('plan');toast('Manage your week and monthly plan')});
+$('#dashboardActions').addEventListener('click',()=>$('#agentBtn').click());
+$('#dashboardMore').addEventListener('click',()=>toast('More project options coming soon'));
+$('#workspaceSwitch').addEventListener('click',()=>toast('Orbit Pro · Personal workspace'));
+$('#barNotify').addEventListener('click',()=>toast('You’re all caught up on notifications'));
+$('#progressMore').addEventListener('click',()=>toast('Progress updates as you complete tasks'));
+$('#deadlineMore').addEventListener('click',()=>{dashboardFilter='';$('#globalSearch').value='';renderDashboard();toast('Showing your next deadlines')});
+$('#meetingMore').addEventListener('click',()=>go('plan'));
+$('#allDeadlines').addEventListener('click',()=>{go('home');$('#scroll').scrollTop=0});
+$('#focusCurrent').addEventListener('click',()=>{const t=tasks.find(t=>t.status==='active'&&t.day===0)||tasks.find(t=>t.status!=='done'&&t.status!=='skipped'&&t.day===0);if(t)openFocus(t.id);else toast('Your task list is clear')});
+$('#calendarOpenPlan').addEventListener('click',()=>go('plan'));
+$('#calendarMonth').addEventListener('click',()=>go('plan'));
+$('#calendarPrev').addEventListener('click',()=>{dashboardWeekOffset--;renderDashboard()});
+$('#calendarNext').addEventListener('click',()=>{dashboardWeekOffset++;renderDashboard()});
+$('#calendarFilter').addEventListener('click',()=>{const next=prompt('Filter tasks by title or category:',dashboardFilter);if(next!==null){dashboardFilter=next;$('#globalSearch').value=next;renderDashboard()}});
+$('#calendarStatus').addEventListener('click',()=>{dashboardFilter='';$('#globalSearch').value='';renderDashboard();toast('Showing tasks of every status')});
+$('#calendarCustomize').addEventListener('click',()=>toast('Calendar layout is set to weekly view'));
+$('#calendarView').addEventListener('click',()=>go('plan'));
+/* end dashboard handlers */
+
 $('#agentBtn').addEventListener('click',()=>{ $('#agentOverlay').classList.add('open');$('#agentOverlay').setAttribute('aria-hidden','false');$('#agentInput').focus()});
 $$('[data-close]').forEach(b=>b.addEventListener('click',()=>close(b.dataset.close)));
 $('#agentOverlay').addEventListener('click',e=>{if(e.target===$('#agentOverlay'))close('agentOverlay')});
@@ -350,7 +633,7 @@ $('#focusVoice').addEventListener('click',()=>{const SR=window.SpeechRecognition
 $('#focusOverlay').addEventListener('click',e=>{if(e.target===$('#focusOverlay'))close('focusOverlay')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){close('focusOverlay');close('agentOverlay')}});
 const weekHead=$('.weekhead'),weekGrid=$('#weekGrid');let syncingWeek=false;[weekHead,weekGrid].forEach(el=>el.addEventListener('scroll',()=>{if(syncingWeek)return;syncingWeek=true;(el===weekHead?weekGrid:weekHead).scrollLeft=el.scrollLeft;syncingWeek=false},{passive:true}));
-renderTimeline();renderWeek();renderMonth();renderBars();
+renderTimeline();renderWeek();renderMonth();renderBars();renderDashboard();
 })();
 </script>
 </div></div></div>
