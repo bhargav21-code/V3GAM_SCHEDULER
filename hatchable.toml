@@ -1,0 +1,14 @@
+name = "Orbit AI Task Scheduler"
+tagline = "Your AI-powered daily planner"
+description = "Voice-first task scheduling, habits, and personal productivity."
+category = "Productivity"
+tags = ["ai", "tasks", "habits", "scheduler"]
+
+[auth]
+enabled = true
+providers = ["email", "google"]
+signup = "open"
+
+[ai]
+required = true
+providers = ["google", "openai", "anthropic"]
