@@ -4,10 +4,7 @@ description = "Voice-first task scheduling, habits, and personal productivity."
 category = "Productivity"
 tags = ["ai", "tasks", "habits", "scheduler"]
 
-[auth]
-enabled = false
-providers = ["email"]
-signup = "open"
+# Supabase Auth owns end-user login and sessions; Hatchable native auth is intentionally unused.
 
 [ai]
 required = true
