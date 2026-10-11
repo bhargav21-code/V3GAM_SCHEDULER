@@ -12,3 +12,23 @@ signup = "open"
 [ai]
 required = true
 providers = ["google", "openai", "anthropic"]
+
+[db.tables.orbit_tasks]
+read = "own"
+write = "own"
+
+[db.tables.orbit_habits]
+read = "own"
+write = "own"
+
+[db.tables.orbit_habit_logs]
+read = "own"
+write = "own"
+
+[db.tables.orbit_preferences]
+read = "own"
+write = "own"
+
+[db.tables.orbit_notifications]
+read = "own"
+write = "own"
