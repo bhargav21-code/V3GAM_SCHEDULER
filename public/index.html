@@ -126,6 +126,32 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(137,120,255,.12),transp
 .app.light .task.completed{background:linear-gradient(110deg,rgba(37,158,113,.10),rgba(37,158,113,.035));border-color:rgba(37,158,113,.25)}
 .app.light .task.completed .mark:after{color:#fff}
 .app.light .overlay{background:rgba(21,21,41,.42)}
+/* Readability and calendar touch improvements */
+:root{--m:#b0b2c2;--sub:#9294a8}
+.app.light{--m:#5f6278;--sub:#73768d}
+.time-label,.eyebrow2,.taskmeta,.duration,.muted,.cardsub,.caption,.focuscount{color:var(--m)}
+.weekhead,.weekgrid{scrollbar-width:thin;scrollbar-color:var(--s3) transparent}
+.day{min-width:0;box-shadow:var(--elev1)}
+.block{font-size:9px;line-height:1.35;min-height:34px;padding:5px 4px;border-radius:7px}
+.heat{min-height:40px;font-weight:700}
+.weekhead div{font-size:10px}
+.day:focus-visible,.heat:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+@media(max-width:800px){
+.weekhead,.weekgrid{width:calc(100% - 22px);margin-left:11px;margin-right:11px;padding:0 0 7px;grid-template-columns:repeat(7,minmax(76px,1fr));gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;touch-action:pan-x;scrollbar-width:thin}
+.weekhead div{scroll-snap-align:start;font-size:10px;padding:9px 0}
+.weekgrid .day{scroll-snap-align:start;min-height:190px;padding:7px 5px;gap:8px}
+.weekgrid .daynum{font-size:12px}
+.weekgrid .block{font-size:9px;min-height:34px;padding:5px 4px;line-height:1.35}
+.monthgrid{gap:5px}
+.heat{height:auto;min-height:38px;font-size:11px}
+.taskmeta,.time-label,.duration,.muted,.eyebrow2{font-size:10px}
+}
+@media(max-width:370px){
+.weekhead,.weekgrid{grid-template-columns:repeat(7,minmax(72px,1fr));padding:0 0 6px;gap:5px}
+.weekgrid .block{font-size:8px}
+.heat{min-height:35px;font-size:10px}
+}
+
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style></head><body>
 <div class="stage"><aside class="intro"><div class="eyebrow"><span class="brand">✦</span> PRODUCT PREVIEW / 01</div><h1>Your day,<br><span>in flow.</span></h1><p>Meet Orbit, a calmer way to plan. Tell your AI what matters, let it shape the day, then stay present for one task at a time.</p><div class="features"><div class="feature"><i>◷</i> Adaptive scheduling with one-tap task controls</div><div class="feature"><i>✳</i> Voice-first capture and schedule changes</div><div class="feature"><i>▦</i> Week, month, and focus insights in one place</div></div><div class="note">CLICK ANY TASK · TRY THE MIC · SWITCH THE THEME</div></aside>
@@ -184,7 +210,7 @@ function openFocus(id){const t=tasks.find(x=>x.id===id);if(!t)return;state.focus
 function close(id){$( '#'+id).classList.remove('open');$('#'+id).setAttribute('aria-hidden','true')}
 $('#closeFocus').addEventListener('click',()=>close('focusOverlay'));$('#focusMore').addEventListener('click',()=>toast('Task options · coming next'));
 function celebrateTask(id){const target=$('[data-task="'+id+'"]');if(!target)return;target.classList.add('rewarded');const appRect=$('#app').getBoundingClientRect(),r=target.getBoundingClientRect();['✦','✧','＋','✦','•','✧'].forEach((glyph,i)=>{const p=document.createElement('span');p.className='reward-spark';p.textContent=glyph;p.style.left=(r.left+r.width*(.25+.1*i)-appRect.left)+'px';p.style.top=(r.top+r.height*.45-appRect.top)+'px';p.style.setProperty('--dx',((i-2.5)*11)+'px');p.style.setProperty('--rot',((i-2.5)*18)+'deg');$('#app').appendChild(p);setTimeout(()=>p.remove(),900)})}
-function actionTask(action){const t=tasks.find(x=>x.id===state.focused);if(!t)return;let msg='';if(action==='done'){t.status='done';msg='Task complete. Nice work ✦'}else if(action==='snooze'){let m=(mins(t.start)+10)%1440;t.start=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');t.status='planned';msg='Snoozed for 10 minutes'}else{t.status='skipped';msg='Skipped. Your plan stays flexible'}close('focusOverlay');renderTimeline();renderWeek();toast(msg)}
+function actionTask(action){const t=tasks.find(x=>x.id===state.focused);if(!t)return;let msg='';if(action==='done'){t.status='done';msg='Task complete. Nice work ✦'}else if(action==='snooze'){let m=(mins(t.start)+10)%1440;t.start=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');t.status='planned';msg='Snoozed for 10 minutes'}else{t.status='skipped';msg='Skipped. Your plan stays flexible'}close('focusOverlay');renderTimeline();renderWeek();if(action==='done'){celebrateTask(t.id)}toast(msg)}
 $('#focusDone').addEventListener('click',()=>actionTask('done'));$('#focusSnooze').addEventListener('click',()=>actionTask('snooze'));$('#focusSkip').addEventListener('click',()=>actionTask('skip'));
 $('#addTaskBtn').addEventListener('click',()=>{go('add');$('#taskName').focus()});$('#backHomeBtn').addEventListener('click',()=>go('home'));
 function taskSlot(pref){if(pref==='morning')return '11:00';if(pref==='afternoon')return '14:30';if(pref==='evening')return '17:30';const occupied=tasks.filter(t=>t.day===0).map(t=>mins(t.start));for(const s of ['11:00','14:30','15:00','17:30'])if(!occupied.some(m=>Math.abs(m-mins(s))<50))return s;return '15:00'}
@@ -212,6 +238,7 @@ $('#applyDiffBtn').addEventListener('click',()=>{const movable=tasks.filter(t=>t
 $('#focusVoice').addEventListener('click',()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){try{const rec=new SR();rec.lang='en-US';rec.onresult=e=>{const s=e.results[0][0].transcript.toLowerCase();if(s.includes('done'))actionTask('done');else if(s.includes('snooze'))actionTask('snooze');else if(s.includes('skip'))actionTask('skip');else toast('Try “done”, “snooze”, or “skip”')};rec.onerror=()=>toast('Voice input is unavailable on this device');rec.start();toast('Listening for done, snooze, or skip…')}catch(e){toast('Try “done”, “snooze”, or “skip”')}}else if('speechSynthesis'in window){const u=new SpeechSynthesisUtterance('Say done, snooze ten minutes, or skip.');speechSynthesis.speak(u);toast('Voice hint played')}else toast('Try “done”, “snooze”, or “skip”')});
 $('#focusOverlay').addEventListener('click',e=>{if(e.target===$('#focusOverlay'))close('focusOverlay')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){close('focusOverlay');close('agentOverlay')}});
+const weekHead=$('.weekhead'),weekGrid=$('#weekGrid');let syncingWeek=false;[weekHead,weekGrid].forEach(el=>el.addEventListener('scroll',()=>{if(syncingWeek)return;syncingWeek=true;(el===weekHead?weekGrid:weekHead).scrollLeft=el.scrollLeft;syncingWeek=false},{passive:true}));
 renderTimeline();renderWeek();renderMonth();renderBars();
 })();
 </script>
