@@ -152,6 +152,29 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(137,120,255,.12),transp
 .heat{min-height:35px;font-size:10px}
 }
 
+/* Accessibility polish: robust keyboard focus, high-contrast light calendar, 44px heat cells */
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--a);outline-offset:3px;box-shadow:0 0 0 5px var(--soft)}
+.heat{min-height:44px}
+.app.light .block{background:#ece8ff;color:#4936a4;border:1px solid #d5cdfd}
+.app.light .block.blue{background:#e4efff;color:#24548b;border-color:#c7daf7}
+.app.light .block.gold{background:#fff3d8;color:#77520f;border-color:#f0dfad}
+.app.light .block.green{background:#e2f6ee;color:#216b4e;border-color:#bde7d4}
+.app.light .block.pink{background:#fde9ed;color:#87364a;border-color:#f3c5cf}
+.app.light .heat.l1{background:#f0edff;color:#4936a4;border:1px solid #ded7ff}
+.app.light .heat.l2{background:#dcd4ff;color:#352576;border:1px solid #c3b6ff}
+.app.light .heat.l3{background:#b7a8ff;color:#26175f;border:1px solid #9884fa}
+.app.light .heat.l4{background:#6f5ae7;color:#fff;border:1px solid #5842d0}
+.app.light .task.completed .mark:after{color:#14543f}
+.app.light .voicebtn{color:#4936a4;background:#f0edff;border-color:#c6baff}
+.app.light .now{color:#4936a4}
+.app.light .score label{color:#4936a4}
+.app.light .focuscat,.app.light .voicehint b{color:#4936a4}
+.app.light .nav button.active{color:#4936a4}
+.app.light .seg button.active{background:#e6e1ff;color:#352576}
+.app.light .parsed{background:#eaf8f1;border-color:#a9dfc7}
+.app.light .parsedtop{color:#176846}
+@media(max-width:800px){.heat{min-height:44px}.weekgrid .day{min-height:196px}}
+@media(prefers-reduced-motion:reduce){.task.completed,.reward-spark{animation:none!important}.reward-spark{display:none!important}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style></head><body>
 <div class="stage"><aside class="intro"><div class="eyebrow"><span class="brand">✦</span> PRODUCT PREVIEW / 01</div><h1>Your day,<br><span>in flow.</span></h1><p>Meet Orbit, a calmer way to plan. Tell your AI what matters, let it shape the day, then stay present for one task at a time.</p><div class="features"><div class="feature"><i>◷</i> Adaptive scheduling with one-tap task controls</div><div class="feature"><i>✳</i> Voice-first capture and schedule changes</div><div class="feature"><i>▦</i> Week, month, and focus insights in one place</div></div><div class="note">CLICK ANY TASK · TRY THE MIC · SWITCH THE THEME</div></aside>
