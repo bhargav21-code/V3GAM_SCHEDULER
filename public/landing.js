@@ -1,6 +1,6 @@
 (() => {
   const APP = 'Orbit';
-  const $ = (selector, root) => root.querySelector(selector);
+  const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root) => Array.from(root.querySelectorAll(selector));
   const path = {
     sparkles:'<path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/><path d="m19 14 1.1 2.9L23 18l-2.9 1.1L19 22l-1.1-2.9L15 18l2.9-1.1L19 14Z"/>',
