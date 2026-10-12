@@ -354,4 +354,59 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .app.light .bar.actual{background:#DDEFC9!important}
 .app.light .focusicon{background:linear-gradient(145deg,#dfe9c8,#a9c26b)!important;border-color:#d4dfbf!important}
 .app.light .notification-row.unread{background:#f0f5e4!important;border-color:#c8d8a8!important}
+/* Use the original live checklist as the dashboard's task-flow component. */
+#dashboardTodayAgenda{display:none!important}
+.dashboard-home-timeline{display:grid;gap:5px;padding:0!important;margin:0!important;max-width:none!important}
+.dashboard-home-timeline .time-row{grid-template-columns:62px minmax(0,1fr)!important;gap:8px!important;min-height:0!important}
+.dashboard-home-timeline .time-label{font-size:10px!important;padding-top:13px!important;color:var(--muted)!important}
+.dashboard-home-timeline .time-content{padding:6px 0 7px 9px!important;border-top:1px solid rgba(60,80,40,.09)!important}
+.dashboard-home-timeline .task{min-height:48px!important;padding:9px 10px!important;border-radius:13px!important;box-shadow:0 3px 9px rgba(60,80,40,.06),inset 0 1px #fff!important}
+.dashboard-home-timeline .task-check{width:20px!important;height:20px!important;min-width:20px!important;border-radius:6px!important}
+.dashboard-home-timeline .tasktitle{font:700 12px 'Nunito',sans-serif!important}
+.dashboard-home-timeline .taskmeta,.dashboard-home-timeline .duration{font-size:10px!important}
+.dashboard-home-timeline .time-content .task.study{background:#DCE8FB!important;border-color:#c9d9f1!important;color:#29496f!important}
+.dashboard-home-timeline .time-content .task.lecture,.dashboard-home-timeline .time-content .task.gym{background:#DDEFC9!important;border-color:#cbe2ae!important;color:#3D5A27!important}
+.dashboard-home-timeline .time-content .task.meal{background:#FBE3C4!important;border-color:#f1d2a9!important;color:#7b4d1d!important}
+.dashboard-home-timeline .time-content .task.lab{background:#E6DAF7!important;border-color:#d9c8f0!important;color:#5c4385!important}
+.app:not(.light) .dashboard-home-timeline .time-content{border-top-color:var(--line)!important}
+.app:not(.light) .dashboard-home-timeline .time-content .task{color:var(--t)!important;box-shadow:0 4px 12px rgba(0,0,0,.15),inset 0 1px rgba(255,255,255,.045)!important}
+.app:not(.light) .dashboard-home-timeline .time-content .task.study{background:rgba(91,126,180,.2)!important;color:#d5e5ff!important}
+.app:not(.light) .dashboard-home-timeline .time-content .task.lecture,.app:not(.light) .dashboard-home-timeline .time-content .task.gym{background:rgba(107,142,58,.22)!important;color:#dcecc3!important}
+.app:not(.light) .dashboard-home-timeline .time-content .task.meal{background:rgba(183,121,57,.2)!important;color:#ffe0b8!important}
+.app:not(.light) .dashboard-home-timeline .time-content .task.lab{background:rgba(134,101,181,.22)!important;color:#e8d8ff!important}
+.notification-filter-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px;margin:12px 0 14px;border:1px solid var(--line);border-radius:999px;background:#f0f3e7}
+.notification-filter-tabs button{min-height:34px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:800 11px 'Nunito',sans-serif;cursor:pointer}
+.notification-filter-tabs button.active{color:var(--olive-900);background:linear-gradient(145deg,#dfe9c8,#fff);box-shadow:0 3px 9px rgba(60,80,40,.1),inset 0 1px #fff}
+.notification-task-icon{background:linear-gradient(145deg,#dce8fb,#b7cdeb)!important;color:#355783!important}
+.notification-system-icon{background:linear-gradient(145deg,#dfe9c8,#a9c26b)!important;color:#3D5A27!important}
+.app:not(.light) .notification-filter-tabs{background:#202a1c!important;border-color:var(--line)!important}
+.app:not(.light) .notification-filter-tabs button{color:#b9c4ae}
+.app:not(.light) .notification-filter-tabs button.active{background:linear-gradient(145deg,#50683a,#334723)!important;color:#f5f6ed!important}
+.app:not(.light) .notification-task-icon{background:linear-gradient(145deg,#34485e,#283b51)!important;color:#d5e5ff!important}
+.app:not(.light) .notification-system-icon{background:linear-gradient(145deg,#50683a,#334723)!important;color:#e5efcb!important}
+@media(max-width:800px){
+ .dashboard-home-timeline .time-row{grid-template-columns:54px minmax(0,1fr)!important}
+ .dashboard-home-timeline .task{padding:9px!important}
+}
+/* Add-task timing choices are presentation controls mapped onto the existing taskWhen field. */
+.task-when-field{position:relative}
+.task-when-state{position:absolute!important;left:-9999px!important;top:auto!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;clip-path:inset(50%)!important;pointer-events:none!important}
+.when-choice-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px}
+.when-choice{position:relative;display:flex;align-items:center;gap:10px;min-width:0;min-height:72px;padding:12px;border:1px solid rgba(60,80,40,.13);border-radius:15px;background:linear-gradient(145deg,#fff,#f4f6ed);text-align:left;color:var(--text);box-shadow:0 3px 10px rgba(60,80,40,.045),inset 0 1px #fff;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.when-choice:hover{transform:translateY(-2px);box-shadow:var(--elev2)}
+.when-choice.active{border-color:#9ab662;background:linear-gradient(145deg,#f3f7e7,#e7efd5);box-shadow:0 0 0 1px rgba(107,142,58,.09),var(--elev1)}
+.when-choice-icon{width:34px;height:34px;display:grid;place-items:center;flex:none;border-radius:11px;background:linear-gradient(145deg,#dfe9c8,#a9c26b);color:#2F4A1E;font-size:16px;box-shadow:var(--elev1)}
+.when-choice-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.when-choice-copy b{font:800 12px 'Nunito',sans-serif;color:var(--olive-900)}
+.when-choice-copy small{font-size:10px;line-height:1.35;color:var(--muted)}
+.when-check{position:absolute;right:9px;top:9px;width:17px;height:17px;display:grid;place-items:center;border-radius:50%;background:var(--olive-500);color:white;font-size:10px;opacity:0;transform:scale(.7);transition:transform .2s ease,opacity .2s ease}
+.when-choice.active .when-check{opacity:1;transform:scale(1)}
+.when-preset-label{display:block;margin:10px 0 6px;font-size:10px!important;color:var(--muted)!important;font-weight:800}
+.app:not(.light) .when-choice{background:linear-gradient(145deg,#293621,#202a1c);color:var(--t);border-color:var(--line);box-shadow:var(--elev1)}
+.app:not(.light) .when-choice.active{background:linear-gradient(145deg,#3d512d,#293820);border-color:#809b52}
+.app:not(.light) .when-choice-copy b{color:#eff5df}
+.app:not(.light) .when-choice-copy small{color:#b9c4ae}
+.app:not(.light) .when-choice-icon{background:linear-gradient(145deg,#536d39,#344823);color:#f3f7e8}
+.app:not(.light) .when-check{background:#a9c26b;color:#1d2a14}
+@media(max-width:800px){.when-choice-cards{grid-template-columns:minmax(0,1fr);gap:8px}.when-choice{min-height:66px}.when-choice-copy small{padding-right:6px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
