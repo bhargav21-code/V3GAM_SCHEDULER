@@ -678,6 +678,27 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
   .nav button{min-height:43px!important;height:43px!important}
   .mic{bottom:calc(69px + env(safe-area-inset-bottom))!important}
 }
+/* Mobile notification sheet: fit the actual viewport and keep its close control tappable. */
+@media(max-width:800px){
+  .phone{zoom:1!important;transform:none!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important}
+  .app{height:calc(100dvh - 37px - env(safe-area-inset-top))!important;min-height:0!important}
+  .notifications-modal-backdrop{position:absolute!important;inset:0!important;z-index:10020!important;display:none;align-items:stretch!important;justify-content:stretch!important;padding:0!important;background:#05050bf2!important;backdrop-filter:blur(12px);overflow:hidden!important;touch-action:pan-y}
+  .notifications-modal-backdrop.open{display:flex!important}
+  .notifications-modal-backdrop .notifications-modal{position:relative!important;width:100%!important;max-width:none!important;height:100%!important;max-height:100%!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;padding:calc(14px + env(safe-area-inset-top)) 15px calc(14px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex!important;flex-direction:column!important;gap:10px!important}
+  .notifications-modal .workspace-modal-head{position:sticky!important;top:0!important;z-index:4!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:4px 0 12px!important;background:var(--s)!important;border-bottom:1px solid var(--line)!important}
+  .notifications-modal .workspace-modal-head h2{font-size:18px!important;line-height:1.25!important;margin:0!important;flex:1!important}
+  #closeNotifications{position:relative!important;z-index:10!important;display:grid!important;place-items:center!important;flex:none!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;touch-action:manipulation!important;background:var(--s2)!important;color:var(--t)!important}
+  .notifications-modal .workspace-modal-copy{font-size:12px!important;line-height:1.55!important;margin:0!important}
+  .notifications-actions{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;margin:0!important}
+  .notifications-actions .btn{min-width:0!important;min-height:42px!important;padding:8px!important;white-space:normal!important;font-size:10px!important}
+  .notifications-list{max-height:none!important;min-height:100px!important;overflow:visible!important;flex:none!important;gap:8px!important}
+  .notification-row{padding:11px!important;gap:9px!important}
+  .notification-row-copy b{font-size:12px!important;line-height:1.4!important}
+  .notification-row-copy p{font-size:11px!important;line-height:1.5!important;overflow-wrap:anywhere}
+  .notification-row-copy small{font-size:9px!important}
+  .notification-row button{min-height:34px!important;touch-action:manipulation!important}
+  .notifications-footnote{margin-top:2px!important;padding-bottom:8px}
+}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
 <div class="orbit-auth" id="orbitAuth" role="dialog" aria-modal="true" aria-labelledby="orbitAuthTitle">
  <section class="orbit-auth-card"><div class="orbit-auth-mark">✦</div><h1 id="orbitAuthTitle">Your day, in flow.</h1><p id="orbitAuthSubtitle">Sign in to keep your tasks and routines private, synced, and ready on every visit.</p>
@@ -877,8 +898,10 @@ function orbitStartReminderPolling(){
  if(orbitSessionActive&&!orbitDemoMode){orbitReminderInterval=setInterval(orbitCheckUpcomingReminders,20000);orbitCheckUpcomingReminders()}
 }
 $('#openNotifications').addEventListener('click',orbitOpenNotifications);
-$('#closeNotifications').addEventListener('click',orbitCloseNotifications);
+$('#closeNotifications').onclick=e=>{e.preventDefault();e.stopPropagation();orbitCloseNotifications()};
+$('#closeNotifications').addEventListener('pointerup',e=>{e.preventDefault();e.stopPropagation();orbitCloseNotifications()},{passive:false});
 $('#notificationsDialog').addEventListener('click',e=>{if(e.target===$('#notificationsDialog'))orbitCloseNotifications()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#notificationsDialog').classList.contains('open'))orbitCloseNotifications()});
 $('#refreshNotifications').addEventListener('click',orbitLoadNotifications);
 $('#enableBrowserNotifications').addEventListener('click',orbitEnableBrowserNotifications);
 function orbitUpdateGreeting(user){
