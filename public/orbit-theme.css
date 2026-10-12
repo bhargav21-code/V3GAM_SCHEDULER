@@ -672,6 +672,41 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   }
 }
 
+/* Nested overview cards remain DOM children of .overview-row; target descendants so they stretch in the primary grid. */
+.workspace-primary .mini-agenda,
+.workspace-primary .progress-card,
+.workspace-primary .calendar-board,
+.workspace-primary .activity-card{
+  box-sizing:border-box!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  align-self:stretch!important;
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+.workspace-primary .mini-agenda{grid-area:flow!important;padding:22px!important}
+.workspace-primary .progress-card{grid-area:progress!important;padding:22px!important}
+.workspace-primary .calendar-board{grid-area:tasks!important;padding:20px!important}
+.workspace-primary .activity-card{grid-area:activity!important;padding:22px!important}
+.workspace-primary .progress-card .progress-ring-zone{
+  flex:1 1 0%!important;
+  min-height:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.workspace-primary .progress-card .progress-stats{margin-top:auto!important}
+.workspace-primary .activity-card .activity-chart{flex:1 1 auto!important;height:auto!important;min-height:160px!important}
+.workspace-primary .activity-card .activity-bottom{margin-top:auto!important}
+.workspace-primary .calendar-board .dashboard-calendar{flex:1 1 auto!important;min-height:0!important}
+.workspace-primary .calendar-board .calendar-day{height:100%!important;min-height:0!important}
+.workspace-primary .mini-agenda #dashboardTimelineMount,
+.workspace-primary .mini-agenda #timeline.dashboard-home-timeline{flex:1 1 auto!important;min-height:0!important}
+.workspace-primary .mini-agenda #timeline.dashboard-home-timeline>.now{margin-top:auto!important}
+
 /* Phone layout: one column in the requested card order; no forced minimum heights. */
 @media(max-width:768px){
   .workspace-columns{
