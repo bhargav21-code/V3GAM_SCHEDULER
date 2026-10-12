@@ -1,0 +1,1 @@
+ALTER TABLE orbit_workspace_members ADD COLUMN IF NOT EXISTS email TEXT;
