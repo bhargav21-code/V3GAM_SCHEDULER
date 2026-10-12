@@ -481,7 +481,7 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
  .selected-date-title{align-items:flex-start}.selected-date-title .btn{padding:0 9px!important}
  .selectable-month .monthgrid{gap:3px}
  .selectable-month .heat{min-height:39px;font-size:10px}
- .selected-task-row{grid-template-columns:49px minmax(0,1fr) auto;gap:6px;padding:9px}
+ .selected-task-row{grid-template-columns:22px minmax(0,1fr);gap:6px;padding:9px}
  .selected-task-info strong{font-size:10px}.selected-task-state{font-size:7px}
  .habit-chart{height:145px}
 }
@@ -671,6 +671,7 @@ async function orbitLoadNotifications(){
  try{
   const response=await orbitAuthorizedFetch('/api/notifications');const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not load notifications');
   orbitNotificationCache=Array.isArray(data.notifications)?data.notifications:[];
+  if('Notification' in window&&Notification.permission==='granted')$('#enableBrowserNotifications').textContent='✓ Browser alerts enabled';
   const unread=orbitNotificationCache.filter(n=>!n.read_at).length,badge=$('#notificationUnread');
   badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0;host.innerHTML='';
   if(!orbitNotificationCache.length){host.innerHTML='<div class="workspace-page-empty"><b>You are all caught up</b>Orbit will show five-minute task reminders here.</div>';return}
@@ -731,7 +732,8 @@ $('#enableBrowserNotifications').addEventListener('click',orbitEnableBrowserNoti
 function orbitUpdateGreeting(user){
  const meta=user?.user_metadata||{};
  const raw=String(meta.full_name||meta.name||meta.display_name||user?.email?.split('@')[0]||'there').trim();
- const name=raw.split(/[._-]+/).filter(Boolean).slice(0,2).map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ')||'there';
+ const cleaned=raw.replace(/\\d+$/,'').replace(/[._-]+/g,' ').trim();
+ const name=cleaned.split(/\\s+/).filter(Boolean).slice(0,2).map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(' ')||'there';
  orbitDisplayName=name;
  $('#greetingText').textContent='Hey, '+name+'!';
  const lines=['Small steps today can turn into big wins tomorrow.','You do not need a perfect day — just your next small step.','Your future self will thank you for starting today.','One task at a time. You are building momentum.','Progress beats perfection. Keep going at your own pace.'];
