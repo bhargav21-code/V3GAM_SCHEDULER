@@ -104,6 +104,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .dashboard-stats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px!important;margin:0 0 22px!important;padding:0!important;max-width:none!important;align-items:stretch!important}
 .metric-card{position:relative;display:flex;align-items:center;gap:13px;min-width:0;min-height:98px;padding:17px 18px;border:1px solid rgba(60,80,40,.1);border-radius:20px;background:linear-gradient(145deg,#fff 0%,#fff 62%,#f3f6e9 100%);box-shadow:var(--elev1);overflow:hidden}
 .metric-tile{width:44px;height:44px;display:grid;place-items:center;flex:none;border-radius:15px;font:700 20px 'Nunito',sans-serif;background:linear-gradient(145deg,#e3eccb,#9fba62);color:#3d5a27;border:1px solid rgba(61,90,39,.15);box-shadow:0 5px 12px rgba(60,80,40,.11),inset 0 1px #fff}
+.dashboard-metric-icon{display:block;width:21px;height:21px;flex:none;overflow:visible}
+.app:not(.light) .dashboard-metric-icon{color:#E5EFCB}
 .metric-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
 .metric-copy small{font-size:11px;color:#737b6d;font-weight:700;white-space:nowrap}
 .metric-copy b{font:800 clamp(19px,1.8vw,25px)/1.2 'Nunito',sans-serif;color:#1f2a17;overflow-wrap:anywhere}
