@@ -25,10 +25,38 @@ export default async function(req,res){
     : "SELECT id,title,category,duration_minutes,starts_at,due_date,status FROM orbit_tasks WHERE user_id=$1 AND workspace_id IS NULL AND status IN ('planned','active') ORDER BY due_date NULLS LAST,starts_at NULLS LAST LIMIT 100";
   const {rows:tasks}=await db.query(taskQuery,[workspaceId!==null?workspaceId:uid]);
   let parsed;
+  const assistantPrompt='Return exactly one valid JSON object with keys reply, action, task, task_id, changes, and view when needed. Do not wrap JSON in markdown or add text before or after it. action must be one of: add_task, complete_task, skip_task, snooze_task, plan_change, open_view, help. For add_task, task must contain title, category, duration_minutes, due_date in YYYY-MM-DD format, start_time in HH:MM format or null, and detail. category must be one of: study, lab, lecture, gym, meal. Only use task_id values from the existing task list. Multi-task changes must be proposed, never auto-applied. Today: '+new Date().toISOString().slice(0,10)+'. Timezone: '+String(req.body?.timezone||'Asia/Kolkata')+'. Current workspace: '+(workspaceId===null?'Personal':('Group workspace '+workspaceId))+'. Existing tasks: '+JSON.stringify(tasks)+'. User request: '+JSON.stringify(message);
+  const parseAssistantJson=(text)=>{
+    const cleaned=String(text||'').replace(/^\uFEFF/,'').trim().replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\s*\x60{3}$/,'').trim();
+    try{const value=JSON.parse(cleaned);if(value&&typeof value==='object'&&!Array.isArray(value))return value;}catch(_){}
+    const first=cleaned.indexOf('{'),last=cleaned.lastIndexOf('}');
+    if(first>=0&&last>first){try{const value=JSON.parse(cleaned.slice(first,last+1));if(value&&typeof value==='object'&&!Array.isArray(value))return value;}catch(_){}}
+    return null;
+  };
+  const validActions=['add_task','complete_task','skip_task','snooze_task','plan_change','open_view','help','clarify'];
+  let modelResult;
   try{
-    const r=await ai.generateText({model:'gemini',asUser:uid,maxTokens:800,prompt:'Return only JSON with reply, action, task, task_id, changes. action: add_task, complete_task, skip_task, snooze_task, plan_change, open_view, help. task fields: title, category, duration_minutes, due_date YYYY-MM-DD, start_time HH:MM, detail. Only use task_id from existing tasks. Multi-task changes must be proposed, never auto-applied. Today: '+new Date().toISOString().slice(0,10)+'. Timezone: '+String(req.body?.timezone||'Asia/Kolkata')+'. Current workspace: '+(workspaceId===null?'Personal':('Group workspace '+workspaceId))+'. Existing tasks: '+JSON.stringify(tasks)+'. User request: '+JSON.stringify(message)});
-    parsed=JSON.parse(String(r.text||'').replace(/^\x60\x60\x60json\s*/i,'').replace(/\s*\x60\x60\x60$/,''));
-  }catch(e){return json(res,503,{error:'AI provider is not configured or could not interpret the request. Configure AI in Hatchable Setup, or add a task manually.',setup_required:true});}
+    modelResult=await ai.generateText({model:'gemini',asUser:uid,userId:uid,purpose:'orbit_assistant',maxTokens:1000,prompt:assistantPrompt});
+  }catch(e){
+    const errorText=[e?.message,e?.hint,e?.error_code,e?.code].filter(Boolean).map(v=>String(v)).join(' ').toLowerCase();
+    const setupRequired=/setup_required|not configured|missing.*(key|credential)|no provider|provider.*config|api key.*missing/.test(errorText);
+    const spendLimit=/ai_spend_limit_reached|spend.limit|daily.*limit/.test(errorText);
+    console.error('[orbit assistant] provider call failed',{name:String(e?.name||'Error').slice(0,80),code:String(e?.error_code||e?.code||'').slice(0,80),setupRequired,spendLimit});
+    if(spendLimit)return json(res,503,{error:'Orbit AI has reached its current usage limit. You can still add the task manually, or try again later.',retryable:true});
+    if(setupRequired)return json(res,503,{error:'AI provider setup is required. Open Hatchable Setup and connect a supported provider, then try again.',setup_required:true,retryable:false});
+    return json(res,502,{error:'Orbit AI could not reach the configured provider. Please try again shortly, or add the task manually.',setup_required:false,retryable:true});
+  }
+  parsed=parseAssistantJson(modelResult?.text);
+  if(modelResult?.finishReason==='length'||!parsed||!validActions.includes(parsed.action)){
+    try{
+      const retry=await ai.generateText({model:'gemini',asUser:uid,userId:uid,purpose:'orbit_assistant_format_retry',maxTokens:1200,prompt:'Follow this instruction carefully and return only a complete valid JSON object. No markdown fences, no commentary, no extra text. Ensure action is one of add_task, complete_task, skip_task, snooze_task, plan_change, open_view, help, clarify.\n\n'+assistantPrompt});
+      parsed=retry?.finishReason==='length'?null:parseAssistantJson(retry?.text);
+      if(!parsed||!validActions.includes(parsed.action))throw new Error('invalid_assistant_json');
+    }catch(e){
+      console.error('[orbit assistant] response formatting failed',{finishReason:String(modelResult?.finishReason||'unknown'),retryError:String(e?.name||'Error').slice(0,80)});
+      return json(res,502,{error:'Orbit AI returned a response it could not safely read. Please try wording the request another way, or add the task manually.',setup_required:false,retryable:true});
+    }
+  }
   const action=parsed.action;
   if(action==='add_task'){
     const t=parsed.task||{},title=String(t.title||'').trim().slice(0,180);

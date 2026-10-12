@@ -139,7 +139,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .purple-dot{background:#6b8e3a!important}.green-dot{background:#a9c26b!important}.orange-dot{background:#d4a16c!important}
 .activity-track{height:6px!important;background:#e4e9d9!important}
 .activity-track span{background:linear-gradient(90deg,#a9c26b,#3d5a27)!important}
-.progress-card{min-height:200px!important;display:flex!important;flex-direction:column}
+.progress-card{display:flex!important;flex-direction:column}
 .progress-stats{gap:30px!important;padding-top:16px!important;border-top:1px solid var(--line);margin-top:auto!important}
 .progress-stats span{font-size:10px!important}.progress-stats b{font:800 21px 'Nunito',sans-serif!important;color:var(--olive-900)}
 .calendar-board{padding:0 18px 14px!important;min-width:0}
@@ -307,7 +307,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .overview-row{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
   .mini-agenda{order:1!important}.overview-row{order:2!important}.calendar-board{order:3!important}
   .activity-card,.progress-card,.deadlines-card,.meetings-card,.mini-agenda{padding:15px!important;border-radius:18px!important}
-  .activity-card{min-height:156px!important}.progress-card{min-height:145px!important}
+  .activity-card{}.progress-card{}
   .calendar-board{padding:0 11px 11px!important;border-radius:18px!important}
   .calendar-toolbar{min-height:48px!important}.calendar-tools{gap:1px!important}.calendar-tools button{font-size:9px!important}
   .calendar-week-header,.dashboard-calendar{min-width:580px!important}
