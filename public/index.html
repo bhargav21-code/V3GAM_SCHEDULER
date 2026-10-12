@@ -534,8 +534,8 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
   .status{height:calc(37px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
   .island{top:calc(7px + env(safe-area-inset-top))}
   .app{height:calc(100% - 37px - env(safe-area-inset-top));width:100%;overflow:hidden}
-  .workspace-bar{display:grid!important;position:absolute;inset:0 0 auto 0;height:88px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:34px 34px;align-content:center;align-items:center;gap:7px 8px;padding:8px 10px;border-bottom:1px solid var(--line);background:linear-gradient(100deg,var(--s),var(--s2));box-shadow:0 5px 18px #0002;z-index:30}
-  .wb-brand{display:none!important}
+  .workspace-bar{display:grid!important;position:absolute;inset:0 0 auto 0;height:116px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:27px 34px 30px;align-content:center;align-items:center;gap:5px 8px;padding:8px 10px;border-bottom:1px solid var(--line);background:linear-gradient(100deg,var(--s),var(--s2));box-shadow:0 5px 18px #0002;z-index:30}
+  .wb-brand{display:flex!important;grid-column:1;grid-row:1;align-self:center;min-width:0;gap:6px;font-size:9px!important;letter-spacing:.4px!important}.wb-brand>span:last-child{display:block!important;line-height:1.05}.wb-brand small{font-size:6px!important;letter-spacing:1px!important;margin-top:2px!important}.wb-symbol{width:21px!important;height:21px!important;border-radius:7px!important;font-size:13px!important;flex:none}.workspace-select-wrap{grid-column:1;grid-row:2!important}.wb-ai{grid-row:1!important}.global-search{grid-column:1 / -1!important;grid-row:3!important}.wb-actions{grid-column:2!important;grid-row:2!important}
   .workspace-select-wrap{grid-column:1;grid-row:1;min-width:0;width:100%;max-width:none}
   .workspace-switch{width:100%;max-width:100%;min-width:0;height:34px;min-height:34px;padding:4px 7px;gap:5px;border-radius:10px}
   .workspace-switch>span:nth-child(2){flex:1;min-width:0;overflow:hidden}
@@ -551,7 +551,7 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
   .wb-actions{grid-column:2;grid-row:2;align-self:center;justify-self:end;margin:0;gap:0}
   .settings-toggle{height:33px;padding:0 9px;gap:5px;border-radius:10px;font-size:10px;white-space:nowrap}
   .settings-menu{top:39px;right:0;width:180px;max-width:calc(100vw - 20px)}
-  .scroll{position:absolute!important;top:88px!important;left:0!important;right:0!important;bottom:calc(72px + env(safe-area-inset-bottom))!important;width:100%!important;height:auto!important;margin:0!important;padding:12px 11px 24px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+  .scroll{position:absolute!important;top:116px!important;left:0!important;right:0!important;bottom:calc(72px + env(safe-area-inset-bottom))!important;width:100%!important;height:auto!important;margin:0!important;padding:12px 11px 24px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
   .screen#screen-home>.top,.screen#screen-home>.pad{display:block!important}
   .dashboard-shell{display:block!important;width:100%;max-width:none;margin:0;padding:2px 0 20px}
   .project-heading{display:flex;align-items:flex-start;flex-direction:column;gap:11px;padding:5px 2px 14px}
@@ -672,8 +672,8 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
   .workspace-switch small{display:block}
 }
 @media(orientation:landscape) and (max-height:500px) and (max-width:800px){
-  .workspace-bar{height:78px;grid-template-rows:30px 30px;padding-top:5px;padding-bottom:5px}
-  .scroll{top:78px!important}
+  .workspace-bar{height:100px;grid-template-rows:24px 28px 26px;padding-top:5px;padding-bottom:5px}
+  .scroll{top:100px!important}
   .nav{height:calc(62px + env(safe-area-inset-bottom))!important;min-height:62px}
   .nav button{min-height:43px!important;height:43px!important}
   .mic{bottom:calc(69px + env(safe-area-inset-bottom))!important}
