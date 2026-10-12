@@ -409,4 +409,26 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .app:not(.light) .when-choice-icon{background:linear-gradient(145deg,#536d39,#344823);color:#f3f7e8}
 .app:not(.light) .when-check{background:#a9c26b;color:#1d2a14}
 @media(max-width:800px){.when-choice-cards{grid-template-columns:minmax(0,1fr);gap:8px}.when-choice{min-height:66px}.when-choice-copy small{padding-right:6px}}
+/* Final page hierarchy: Today’s Flow + calendar first, supporting metrics and the right rail alongside. */
+@media(min-width:801px){
+ .workspace-columns{grid-template-columns:minmax(250px,.95fr) minmax(320px,1.1fr) minmax(250px,.82fr)!important;grid-template-areas:"flow calendar side" "activity progress side"!important;gap:16px!important;align-items:start!important}
+ .workspace-primary,.overview-row{display:contents!important}
+ .workspace-sidebar{display:grid!important;grid-area:side!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;align-content:start!important;min-width:0}
+ .mini-agenda{grid-area:flow!important;align-self:start!important}
+ .calendar-board{grid-area:calendar!important;align-self:start!important;min-height:unset!important}
+ .activity-card{grid-area:activity!important;align-self:start!important;height:215px!important;min-height:215px!important}
+ .progress-card{grid-area:progress!important;align-self:start!important;height:230px!important;min-height:230px!important}
+ .deadlines-card,.meetings-card,.quote-card{grid-area:auto!important}
+}
+@media(max-width:800px){
+ .workspace-primary,.workspace-sidebar,.overview-row{display:contents!important}
+ .workspace-columns{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-areas:none!important;gap:12px!important}
+ .mini-agenda{order:1!important;grid-area:auto!important}
+ .calendar-board{order:2!important;grid-area:auto!important}
+ .activity-card{order:3!important;grid-area:auto!important}
+ .progress-card{order:4!important;grid-area:auto!important}
+ .deadlines-card{order:5!important;grid-area:auto!important}
+ .meetings-card{order:6!important;grid-area:auto!important}
+ .quote-card{order:7!important;grid-area:auto!important}
+}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
