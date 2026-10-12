@@ -434,3 +434,320 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  .quote-card{order:7!important;grid-area:auto!important}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ── Dashboard 4-card layout: a single grid inside workspace-primary ── */
+.workspace-columns{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(240px,.82fr)!important;
+  grid-template-areas:"primary side"!important;
+  gap:20px!important;
+  align-items:stretch!important;
+  min-width:0!important;
+}
+.workspace-primary{
+  display:grid!important;
+  grid-area:primary!important;
+  grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)!important;
+  grid-template-rows:minmax(240px,auto) minmax(300px,auto)!important;
+  grid-template-areas:"flow progress" "tasks activity"!important;
+  gap:20px!important;
+  align-items:stretch!important;
+  align-content:start!important;
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+.workspace-primary>.overview-row{
+  display:contents!important;
+  min-width:0!important;
+  min-height:0!important;
+  width:auto!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+}
+.workspace-sidebar{
+  display:grid!important;
+  grid-area:side!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:20px!important;
+  align-content:start!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+.mini-agenda{grid-area:flow!important}
+.progress-card{grid-area:progress!important}
+.calendar-board{grid-area:tasks!important}
+.activity-card{grid-area:activity!important}
+
+/* Every card stretches to the grid track. Intrinsic content controls row height. */
+.workspace-primary>.mini-agenda,
+.workspace-primary>.progress-card,
+.workspace-primary>.calendar-board,
+.workspace-primary>.activity-card{
+  box-sizing:border-box!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-self:stretch!important;
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+  padding:22px!important;
+  overflow:visible!important;
+}
+.workspace-primary>.mini-agenda{padding:22px!important}
+.workspace-primary>.calendar-board{padding:20px!important}
+.workspace-primary>.activity-card,
+.workspace-primary>.progress-card{padding:22px!important}
+.workspace-primary .panel-head{flex:0 0 auto;min-width:0;margin:0 0 14px!important}
+
+/* Today's Flow: live checklist fills the card; its gentle prompt settles at the bottom. */
+#dashboardTimelineMount{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  width:100%!important;
+  margin:0!important;
+}
+#timeline.dashboard-home-timeline{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  gap:12px!important;
+  min-height:0!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+#timeline.dashboard-home-timeline>.time-row{
+  display:grid!important;
+  grid-template-columns:minmax(58px,68px) minmax(0,1fr)!important;
+  gap:10px!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  width:100%!important;
+}
+#timeline.dashboard-home-timeline>.time-row .time-label{padding-top:12px!important}
+#timeline.dashboard-home-timeline>.time-row .time-content{min-width:0!important;padding:8px 0 8px 10px!important}
+#timeline.dashboard-home-timeline>.time-row .task{height:100%;min-height:52px;box-sizing:border-box}
+#timeline.dashboard-home-timeline>.now{
+  order:99!important;
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  padding:7px 0 1px!important;
+}
+#timeline.dashboard-home-timeline>.insight{flex:1 1 auto;min-height:0}
+
+/* Task progress: centered ring in a flexible body, statistics pinned to its bottom. */
+.progress-ring-zone{
+  display:grid!important;
+  flex:1 1 0%!important;
+  place-items:center!important;
+  min-height:0!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+.progress-card .progress-ring.theme-progress-ring{
+  flex:0 0 100px!important;
+  width:100px!important;
+  height:100px!important;
+  min-height:100px!important;
+  max-height:100px!important;
+  margin:0!important;
+  align-self:center!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.progress-card .progress-stats{
+  flex:0 0 auto!important;
+  width:100%!important;
+  margin:0!important;
+  margin-top:auto!important;
+  padding-top:14px!important;
+  border-top:1px solid var(--line)!important;
+  justify-content:space-evenly!important;
+}
+
+/* Tasks board: seven equal day tracks, flexible day bodies, and a pinned legend. */
+.workspace-primary>.calendar-board .calendar-toolbar{flex:0 0 auto!important;min-width:0!important}
+.workspace-primary>.calendar-board .calendar-week-header{
+  flex:0 0 auto!important;
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  min-width:0!important;
+  width:100%!important;
+}
+.workspace-primary>.calendar-board .dashboard-calendar{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+.workspace-primary>.calendar-board .calendar-day{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  flex:1 1 0%!important;
+  height:100%!important;
+  min-height:0!important;
+  min-width:0!important;
+  padding:5px 5px 4px 0!important;
+  gap:8px!important;
+  box-sizing:border-box!important;
+}
+.workspace-primary>.calendar-board .calendar-day .day-empty{
+  display:flex!important;
+  flex:1 1 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:72px!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+  border-radius:12px!important;
+  border:1px dashed #dce5cb!important;
+  padding:12px 5px!important;
+}
+.workspace-primary>.calendar-board .calendar-foot{
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  min-width:0!important;
+  width:100%!important;
+}
+
+/* Weekly activity: chart expands while the summary/progress strip remains at the foot. */
+.workspace-primary>.activity-card .activity-chart{
+  display:flex!important;
+  flex:1 1 auto!important;
+  height:auto!important;
+  min-height:160px!important;
+  min-width:0!important;
+  margin:0 0 14px!important;
+}
+.workspace-primary>.activity-card .activity-bars{
+  flex:1 1 auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  align-self:stretch!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+}
+.workspace-primary>.activity-card .activity-y-labels{top:0!important;bottom:20px!important}
+.workspace-primary>.activity-card .activity-bar-group{min-width:0!important}
+.workspace-primary>.activity-card .activity-bottom{
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  min-width:0!important;
+  width:100%!important;
+}
+
+/* Medium screens: the task board spans both columns and the side rail follows below. */
+@media(max-width:1024px){
+  .workspace-columns{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"primary" "side"!important;
+    gap:20px!important;
+  }
+  .workspace-primary{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:auto auto auto!important;
+    grid-template-areas:"flow progress" "tasks tasks" "activity activity"!important;
+    gap:20px!important;
+  }
+  .workspace-primary>.calendar-board{grid-column:1/-1!important}
+  .workspace-sidebar{
+    grid-area:side!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:20px!important;
+  }
+}
+
+/* Phone layout: one column in the requested card order; no forced minimum heights. */
+@media(max-width:768px){
+  .workspace-columns{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"primary" "side"!important;
+    gap:20px!important;
+  }
+  .workspace-primary{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto auto!important;
+    grid-template-areas:"flow" "progress" "tasks" "activity"!important;
+    gap:20px!important;
+  }
+  .workspace-primary>.mini-agenda{grid-area:flow!important}
+  .workspace-primary>.progress-card{grid-area:progress!important}
+  .workspace-primary>.calendar-board{grid-area:tasks!important;grid-column:1!important}
+  .workspace-primary>.activity-card{grid-area:activity!important}
+  .workspace-primary>.mini-agenda,
+  .workspace-primary>.progress-card,
+  .workspace-primary>.calendar-board,
+  .workspace-primary>.activity-card{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:18px!important;
+    margin:0!important;
+  }
+  #dashboardTimelineMount{flex:auto!important}
+  #timeline.dashboard-home-timeline{flex:auto!important;gap:12px!important}
+  #timeline.dashboard-home-timeline>.time-row{flex:0 0 auto!important;min-height:0!important}
+  #timeline.dashboard-home-timeline>.time-row .task{height:auto;min-height:52px}
+  .progress-ring-zone{flex:0 0 auto!important;min-height:0!important;padding:12px 0!important}
+  .progress-card .progress-stats{margin-top:8px!important}
+  .workspace-primary>.calendar-board .calendar-toolbar{
+    flex-wrap:wrap!important;
+    min-width:0!important;
+    width:100%!important;
+    gap:6px!important;
+    padding:8px 0!important;
+  }
+  .workspace-primary>.calendar-board .calendar-title,
+  .workspace-primary>.calendar-board .calendar-tools{
+    flex-wrap:wrap!important;
+    min-width:0!important;
+    max-width:100%!important;
+    gap:3px!important;
+  }
+  .workspace-primary>.calendar-board .calendar-title h2{font-size:15px!important}
+  .workspace-primary>.calendar-board .calendar-tools button{font-size:9px!important;padding:6px 4px!important}
+  .workspace-primary>.calendar-board .calendar-week-header,
+  .workspace-primary>.calendar-board .dashboard-calendar,
+  .workspace-primary>.calendar-board .calendar-foot{
+    min-width:0!important;
+    width:100%!important;
+  }
+  .workspace-primary>.calendar-board .calendar-week-header,
+  .workspace-primary>.calendar-board .dashboard-calendar{gap:4px!important}
+  .workspace-primary>.calendar-board .week-date{padding:5px 0!important;justify-content:center!important;white-space:normal!important;flex-direction:column!important;gap:2px!important;font-size:9px!important}
+  .workspace-primary>.calendar-board .week-date strong{font-size:15px!important}
+  .workspace-primary>.calendar-board .calendar-day{
+    height:auto!important;
+    min-height:0!important;
+    padding:3px 2px 4px 0!important;
+    gap:5px!important;
+  }
+  .workspace-primary>.calendar-board .calendar-day .day-empty{
+    min-height:0!important;
+    flex:1 1 auto!important;
+    padding:8px 2px!important;
+    font-size:8px!important;
+    overflow-wrap:anywhere!important;
+  }
+  .workspace-primary>.calendar-board .mini-task{font-size:8px!important;padding:4px 2px!important;gap:3px!important;word-break:break-word!important}
+  .workspace-primary>.calendar-board .mini-task:before{width:3px!important}
+  .workspace-primary>.calendar-board .mini-task small{font-size:7px!important}
+  .workspace-primary>.activity-card .activity-chart{min-height:0!important;height:auto!important;flex:0 1 auto!important;margin-top:4px!important}
+  .workspace-primary>.activity-card .activity-bars{min-height:90px!important}
+  .workspace-primary>.activity-card .activity-bottom{margin-top:12px!important}
+}
