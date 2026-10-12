@@ -850,6 +850,35 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   #app.sidebar-collapsed .workspace-columns{width:100%!important;max-width:none!important}
   #app.sidebar-collapsed .dashboard-shell{max-width:none!important}
 }
+@media(min-width:801px){
+  /* Keep the hamburger glyph optically centered inside its toggle box. */
+  #app .nav .sidebar-toggle{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    line-height:0!important;
+    position:absolute!important;
+    overflow:hidden!important;
+  }
+  #app .nav .sidebar-toggle svg{
+    display:block!important;
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:16px!important;
+    height:16px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate(-50%,-50%)!important;
+    pointer-events:none!important;
+  }
+  #app.sidebar-collapsed .nav .sidebar-toggle{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+}
 @media(max-width:800px){
   #app .nav .sidebar-toggle{display:none!important}
 }
