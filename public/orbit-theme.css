@@ -418,8 +418,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  .workspace-sidebar{display:grid!important;grid-area:side!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;align-content:start!important;min-width:0}
  .mini-agenda{grid-area:flow!important;align-self:start!important}
  .calendar-board{grid-area:calendar!important;align-self:start!important;min-height:unset!important}
- .activity-card{grid-area:activity!important;align-self:start!important;height:215px!important;min-height:215px!important}
- .progress-card{grid-area:progress!important;align-self:start!important;height:230px!important;min-height:230px!important}
+ .activity-card{grid-area:activity!important;align-self:stretch!important}
+ .progress-card{grid-area:progress!important;align-self:stretch!important}
  .deadlines-card,.meetings-card,.quote-card{grid-area:auto!important}
 }
 @media(max-width:800px){
@@ -626,7 +626,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 }
 
 /* Weekly activity: chart expands while the summary/progress strip remains at the foot. */
-.workspace-primary>.activity-card .activity-chart{
+.workspace-primary .activity-card .activity-chart{
   display:flex!important;
   flex:1 1 auto!important;
   height:auto!important;
@@ -634,7 +634,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   min-width:0!important;
   margin:0 0 14px!important;
 }
-.workspace-primary>.activity-card .activity-bars{
+.workspace-primary .activity-card .activity-bars{
   flex:1 1 auto!important;
   width:100%!important;
   height:auto!important;
@@ -642,9 +642,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   align-self:stretch!important;
   grid-template-columns:repeat(7,minmax(0,1fr))!important;
 }
-.workspace-primary>.activity-card .activity-y-labels{top:0!important;bottom:20px!important}
-.workspace-primary>.activity-card .activity-bar-group{min-width:0!important}
-.workspace-primary>.activity-card .activity-bottom{
+.workspace-primary .activity-card .activity-y-labels{top:0!important;bottom:20px!important}
+.workspace-primary .activity-card .activity-bar-group{min-width:0!important}
+.workspace-primary .activity-card .activity-bottom{
   flex:0 0 auto!important;
   margin-top:auto!important;
   min-width:0!important;
@@ -724,10 +724,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .workspace-primary>.progress-card{grid-area:progress!important}
   .workspace-primary>.calendar-board{grid-area:tasks!important;grid-column:1!important}
   .workspace-primary>.activity-card{grid-area:activity!important}
-  .workspace-primary>.mini-agenda,
-  .workspace-primary>.progress-card,
-  .workspace-primary>.calendar-board,
-  .workspace-primary>.activity-card{
+  .workspace-primary .mini-agenda,
+  .workspace-primary .progress-card,
+  .workspace-primary .calendar-board,
+  .workspace-primary .activity-card{
     height:auto!important;
     min-height:0!important;
     max-height:none!important;
@@ -782,7 +782,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .workspace-primary>.calendar-board .mini-task{font-size:8px!important;padding:4px 2px!important;gap:3px!important;word-break:break-word!important}
   .workspace-primary>.calendar-board .mini-task:before{width:3px!important}
   .workspace-primary>.calendar-board .mini-task small{font-size:7px!important}
-  .workspace-primary>.activity-card .activity-chart{min-height:0!important;height:auto!important;flex:0 1 auto!important;margin-top:4px!important}
-  .workspace-primary>.activity-card .activity-bars{min-height:90px!important}
-  .workspace-primary>.activity-card .activity-bottom{margin-top:12px!important}
+  .workspace-primary .activity-card .activity-chart{min-height:0!important;height:auto!important;flex:0 1 auto!important;margin-top:4px!important}
+  .workspace-primary .activity-card .activity-bars{min-height:0!important}
+  .workspace-primary .activity-card .activity-bottom{margin-top:12px!important}
 }
