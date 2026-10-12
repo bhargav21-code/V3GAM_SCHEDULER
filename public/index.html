@@ -699,6 +699,47 @@ html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 
   .notification-row button{min-height:34px!important;touch-action:manipulation!important}
   .notifications-footnote{margin-top:2px!important;padding-bottom:8px}
 }
+/* Orbit olive + porcelain 3D refresh — visual layer only; app logic and layout stay intact */
+:root{--a:#66733b;--soft:rgba(112,128,67,.15);--bg:#f7f7ef;--s:#fffef9;--s2:#f0f1e5;--s3:#e3e7d2;--line:rgba(79,91,44,.15);--t:#27301d;--m:#68705c;--sub:#899078;--green:#81934a;--gold:#d4b56b;--pink:#c98580;--blue:#8da5a0;color-scheme:light}
+body{background:radial-gradient(ellipse at 12% 10%,rgba(185,197,137,.42),transparent 38%),radial-gradient(ellipse at 90% 90%,rgba(220,224,200,.6),transparent 40%),#f4f4eb;color:var(--t)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:#7c8b4a}
+.brand,.plus,.mic,.btn.primary,.send,.completion-next{background:linear-gradient(145deg,#879750,#53632e);box-shadow:0 7px 16px rgba(70,83,38,.22),inset 0 1px rgba(255,255,255,.42),inset 0 -2px rgba(35,47,17,.14)}
+.phone{border-color:#d8dcc8;background:linear-gradient(145deg,#fffef8,#e7ead9);box-shadow:0 30px 70px rgba(61,72,36,.19),0 1px 0 #fff inset}
+.status,.app{background:var(--bg)}
+.icon,.sumcard,.addstrip,.formcard,.monthcard,.insight,.chartcard,.streak,.day,.seg,.sheet,.bubble.ai{background-image:linear-gradient(145deg,#fffefb,#f4f5eb 72%,#e9edda);box-shadow:0 8px 20px rgba(64,75,39,.09),inset 0 1px 0 rgba(255,255,255,.95)}
+.sumcard:hover,.chartcard:hover,.insight:hover,.day:hover{transform:translateY(-2px);box-shadow:0 13px 24px rgba(64,75,39,.14),inset 0 1px 0 #fff}
+.task{box-shadow:0 3px 10px rgba(65,75,39,.06),inset 0 1px #fff;transition:transform .2s ease,box-shadow .2s ease}
+.task:hover{transform:translateY(-1px);box-shadow:0 7px 15px rgba(65,75,39,.11),inset 0 1px #fff}
+.study{--c:#7d8a4d;background:#eef0df;border-color:#d5dcb8}
+.lecture{--c:#8da5a0;background:#e9f0ed;border-color:#cfdfd8}
+.meal{--c:#c5a55a;background:#f7f0dc;border-color:#eadbb0}
+.gym{--c:#81934a;background:#e8eed8;border-color:#d0ddb0}
+.lab{--c:#c98580;background:#f6e9e5;border-color:#ead0c9}
+.task-check.checked{background:linear-gradient(145deg,#8a9a51,#5b6a34);border-color:#718341;color:#fff}
+.nav{background:linear-gradient(180deg,#fffefb,#eef0e2);box-shadow:0 -5px 22px rgba(64,75,39,.08)}
+.nav button.active{color:#53632e;background:linear-gradient(145deg,#e7ebd4,#f9faef);box-shadow:inset 0 1px #fff,0 3px 9px rgba(76,88,43,.10)}
+.seg button.active{background:linear-gradient(145deg,#dfe5c8,#f9faef);color:#3d4b25;box-shadow:0 3px 8px rgba(74,83,42,.10),inset 0 1px #fff}
+.track span,.focusprogress span{background:linear-gradient(90deg,#a7b66a,#62743b)}
+.day.today{border-color:#8a9956;background:linear-gradient(145deg,#e8edcf,#f9faef);box-shadow:0 0 0 1px rgba(102,119,56,.08),0 7px 16px rgba(64,75,39,.10)}
+.block{background:#e9edda;color:#4e6030}.block.blue{background:#e4eeea;color:#526f67}.block.gold{background:#f5eed9;color:#8c6f2e}.block.green{background:#e5ecd4;color:#53672e}.block.pink{background:#f4e7e3;color:#9c625d}
+.score{background:linear-gradient(135deg,#e5eacb,#f6f7ed 85%);border-color:#d4dcb8}
+.focusicon{background:linear-gradient(145deg,#e5eacb,#f5f6e9);border-color:#cbd5a8}
+.voicebtn,.chip{background:linear-gradient(135deg,#edf0df,#fffef8);border-color:#d1d9b7;color:#4e6030}
+.bubble.user{background:linear-gradient(145deg,#879750,#53632e);box-shadow:0 4px 12px rgba(79,93,43,.2)}
+.sheet{background:linear-gradient(155deg,#fffefb,#f0f2e5);border-color:var(--line)}
+.app.light{--a:#66733b;--soft:rgba(112,128,67,.15);--bg:#f7f7ef;--s:#fffef9;--s2:#f0f1e5;--s3:#e3e7d2;--line:rgba(79,91,44,.15);--t:#27301d;--m:#68705c;--sub:#899078;--green:#81934a;--gold:#d4b56b;--pink:#c98580;--blue:#8da5a0;color-scheme:light}
+html:has(.app.light),body:has(.app.light){background:radial-gradient(ellipse at 8% 8%,rgba(185,197,137,.34),transparent 38%),#f4f4eb}
+.app.light .sumcard,.app.light .addstrip,.app.light .formcard,.app.light .monthcard,.app.light .insight,.app.light .chartcard,.app.light .streak,.app.light .day{background-image:linear-gradient(145deg,#fffefb,#f4f5eb 66%,#e9edda);box-shadow:0 8px 20px rgba(64,75,39,.09),inset 0 1px 0 #fff}
+.app.light .study{background:linear-gradient(135deg,#e9edd7,#f7f8ee);border-color:#d5dcb8}
+.app.light .lecture{background:linear-gradient(135deg,#e4eeea,#f6faf7);border-color:#cfdfd8}
+.app.light .meal{background:linear-gradient(135deg,#f7f0dc,#fffaf0);border-color:#eadbb0}
+.app.light .gym{background:linear-gradient(135deg,#e4ebd0,#f3f7e8);border-color:#d0ddb0}
+.app.light .lab{background:linear-gradient(135deg,#f6e9e5,#fff7f4);border-color:#ead0c9}
+.app.light .nav{background:linear-gradient(180deg,#fffefb,#eef0e2);box-shadow:5px 0 23px rgba(65,75,39,.08)}
+.app.light .nav button.active{color:#53632e;background:linear-gradient(145deg,#e7ebd4,#f9faef);box-shadow:inset 0 1px #fff,0 3px 9px rgba(76,88,43,.08)}
+.app.light .btn.primary,.app.light .plus,.app.light .mic,.app.light .send,.app.light .completion-next{background:linear-gradient(145deg,#879750,#53632e);box-shadow:0 7px 16px rgba(70,83,38,.22),inset 0 1px rgba(255,255,255,.38),inset 0 -2px rgba(35,47,17,.14)}
+.app.light .voicebtn,.app.light .chip{background:linear-gradient(135deg,#edf0df,#fffef8);border-color:#d1d9b7;color:#4e6030}
+@media(prefers-reduced-motion:reduce){.task,.sumcard,.chartcard,.insight,.day{transition:none!important}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
 <div class="orbit-auth" id="orbitAuth" role="dialog" aria-modal="true" aria-labelledby="orbitAuthTitle">
  <section class="orbit-auth-card"><div class="orbit-auth-mark">✦</div><h1 id="orbitAuthTitle">Your day, in flow.</h1><p id="orbitAuthSubtitle">Sign in to keep your tasks and routines private, synced, and ready on every visit.</p>
