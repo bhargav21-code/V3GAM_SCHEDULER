@@ -1,7 +1,7 @@
 (() => {
   const APP = 'Orbit';
   const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root) => Array.from(root.querySelectorAll(selector));
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const path = {
     sparkles:'<path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/><path d="m19 14 1.1 2.9L23 18l-2.9 1.1L19 22l-1.1-2.9L15 18l2.9-1.1L19 14Z"/>',
     message:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 4a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.4Z"/>',
@@ -14,6 +14,7 @@
     menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
     close:'<path d="m18 6-12 12M6 6l12 12"/>',
     target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     route:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h3a3 3 0 0 0 3-3V8a3 3 0 0 1 3-3"/>',
     calendarCheck:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-13 5 2 2 4-4"/>',
     checkCircle:'<circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/>',
@@ -48,7 +49,11 @@
       {icon:'message', title:'Natural-language entry', body:'Type “Python study tomorrow 7pm for an hour” and ' + APP + ' structures it, then always confirms before saving.'},
       {icon:'calendar', title:'Smart scheduling', body:'Slots weigh deadline urgency, priority, duration and your availability. Every suggestion comes with a reason.'},
       {icon:'target', title:'Conflict detection', body:'Overloaded days get flagged early, with alternatives that respect what you already committed to.'},
-      {icon:'bell', title:'Reminders that respect you', body:'Complete, postpone or mark missed. No duplicate alerts, no nagging, no fake urgency.'}
+      {icon:'bell', title:'Reminders that respect you', body:'Complete, postpone or mark missed. No duplicate alerts, no nagging, no fake urgency.'},
+      {icon:'clock', title:'A focus mode for getting it done', body:'Start a task with its own timer, track the time left, and choose to finish, snooze, or skip when life changes.'},
+      {icon:'checkCircle', title:'Habits and progress that add up', body:'Track daily routines, see your streaks and completion trends, and celebrate the steady work behind bigger goals.'},
+      {icon:'shield', title:'Personal and group workspaces', body:'Keep your own plan private, or join a shared space for group tasks, members, and plans that stay organized together.'},
+      {icon:'route', title:'A voice assistant that takes action', body:'Ask Orbit to add or update tasks, check your schedule, or open progress. Actions use your signed-in account and return a real result.'}
     ];
     return '<section class="features-section section-shell" id="features"><div class="content-width"><div class="problem-intro" data-reveal><span class="section-kicker section-kicker-light">A BETTER WAY TO PLAN</span><h2>To-do lists ignore the<br class="desktop-break"> one thing that matters.</h2><p>They store what you need to do, but never when. Tasks have duration, deadlines and conflicts, and pretending otherwise is how days fall apart.</p></div>' +
       '<div class="features-heading" data-reveal><div><span class="section-kicker section-kicker-green">PURPOSE-BUILT FOR REAL LIFE</span><h2>Built to make your day fit.</h2></div><p>A deterministic engine decides when. A light AI layer only understands your words and explains the plan.</p></div>' +
@@ -75,6 +80,25 @@
   const root = $('#landing-app');
   if (!root) return;
   root.innerHTML = [Hero(), Features(), HowItWorks(), CTA(), Footer()].join('');
+  // Enable motion only after the landing markup has been rendered.
+  const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const heroVisual = $('.hero-visual');
+  if (heroVisual && !prefersReduce && window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    heroVisual.addEventListener('pointermove', event => {
+      const bounds = heroVisual.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      heroVisual.style.setProperty('--tilt-x', (x * 13 - 4.5).toFixed(2) + 'deg');
+      heroVisual.style.setProperty('--tilt-y', (-y * 8 + 2).toFixed(2) + 'deg');
+      heroVisual.style.setProperty('--float-shift', (x * 8).toFixed(2) + 'px');
+    });
+    heroVisual.addEventListener('pointerleave', () => {
+      heroVisual.style.setProperty('--tilt-x', '-4.5deg');
+      heroVisual.style.setProperty('--tilt-y', '2deg');
+      heroVisual.style.setProperty('--float-shift', '0px');
+    });
+  }
 
   const menuButton = $('#menu-toggle');
   const mobileMenu = $('#mobile-menu');
@@ -105,6 +129,7 @@
   } else {
     revealEls.forEach(el => el.classList.add('is-visible'));
   }
+  document.documentElement.classList.add('landing-motion-ready');
   const legal = $('#legal-dialog');
   $$('[data-legal]').forEach(link => link.addEventListener('click', event => {
     event.preventDefault();
