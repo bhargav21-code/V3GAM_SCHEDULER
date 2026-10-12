@@ -13,7 +13,7 @@ export default async function (req, res) {
 
   if (req.method === 'GET') {
     const { rows } = await db.query(
-      'SELECT w.id,w.name,w.owner_id,w.invite_code,w.created_at,m.role FROM orbit_workspace_members m JOIN orbit_workspaces w ON w.id=m.workspace_id WHERE m.user_id=$1 ORDER BY w.created_at DESC',
+      'SELECT w.id,w.name,w.owner_id,w.invite_code,w.created_at,m.role,(SELECT COUNT(*)::int FROM orbit_workspace_members mx WHERE mx.workspace_id=w.id) AS member_count FROM orbit_workspace_members m JOIN orbit_workspaces w ON w.id=m.workspace_id WHERE m.user_id=$1 ORDER BY w.created_at DESC',
       [userId]
     );
     return json(res, 200, { workspaces: rows });
