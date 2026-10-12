@@ -413,7 +413,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(max-width:800px){.when-choice-cards{grid-template-columns:minmax(0,1fr);gap:8px}.when-choice{min-height:66px}.when-choice-copy small{padding-right:6px}}
 /* Final page hierarchy: Today’s Flow + calendar first, supporting metrics and the right rail alongside. */
 @media(min-width:801px){
- .workspace-columns{grid-template-columns:minmax(250px,.95fr) minmax(320px,1.1fr) minmax(250px,.82fr)!important;grid-template-areas:"flow calendar side" "activity progress side"!important;gap:16px!important;align-items:start!important}
+ .workspace-columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(220px,.82fr)!important;grid-template-areas:"flow calendar side" "activity progress side"!important;gap:16px!important;align-items:start!important}
  .workspace-primary,.overview-row{display:contents!important}
  .workspace-sidebar{display:grid!important;grid-area:side!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;align-content:start!important;min-width:0}
  .mini-agenda{grid-area:flow!important;align-self:start!important}
