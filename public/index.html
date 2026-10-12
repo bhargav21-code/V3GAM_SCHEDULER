@@ -899,7 +899,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .app:not(.light) .block{background:rgba(91,126,180,.2);color:#d5e5ff}.app:not(.light) .block.gold{background:rgba(183,121,57,.2);color:#ffe0b8}.app:not(.light) .block.green{background:rgba(107,142,58,.22);color:#dcecc3}.app:not(.light) .block.pink{background:rgba(134,101,181,.22);color:#e8d8ff}
 .app:not(.light) .mic,.app:not(.light) .plus,.app:not(.light) .btn.primary,.app:not(.light) .send,.app:not(.light) .completion-next{background:linear-gradient(145deg,#6b8e3a,#2f4a1e);color:#fff}
 @media(prefers-reduced-motion:reduce){.task,.sumcard,.chartcard,.insight,.day,.icon,.btn,.plus{transition:none!important}}
-</style><link rel="stylesheet" href="/orbit-theme.css"><link rel="stylesheet" href="/orbit-tokens.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
+</style><link rel="stylesheet" href="/orbit-theme.css"><link rel="stylesheet" href="/orbit-tokens.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script></head><body>
 <div class="orbit-auth" id="orbitAuth" role="dialog" aria-modal="true" aria-labelledby="orbitAuthTitle">
  <section class="orbit-auth-card"><div class="orbit-auth-mark">✦</div><h1 id="orbitAuthTitle">Your day, in flow.</h1><p id="orbitAuthSubtitle">Sign in to keep your tasks and routines private, synced, and ready on every visit.</p>
  <form id="orbitAuthForm"><label for="orbitEmail">Email address</label><input id="orbitEmail" type="email" autocomplete="email" required placeholder="you@example.com"><div id="orbitPasswordWrap"><label for="orbitPassword">Password</label><input id="orbitPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></div><div id="orbitOtpWrap" hidden><label for="orbitEmailOtp">Email verification code</label><input id="orbitEmailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="Enter the code from your email"></div><button class="auth-primary" id="orbitAuthSubmit" type="submit">Sign in</button></form>
@@ -1025,6 +1025,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <nav class="nav" aria-label="Main navigation"><button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Hide sidebar" aria-expanded="true" title="Hide sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><button class="active" data-screen="home"><span class="ni">⌂</span>Today</button><button data-screen="plan"><span class="ni">▦</span>Plan</button><button data-screen="add"><span class="ni">＋</span>Add</button><button data-screen="workspace"><span class="ni">♧</span>Workspace</button><button data-screen="stats"><span class="ni">◔</span>Insights</button><button class="rail-bottom" id="railAssistant" aria-label="Open Orbit assistant"><span class="ni">✳</span><span class="rail-text">Orbit AI</span></button><button class="rail-bottom" id="railTheme" aria-label="Toggle theme"><span class="ni" id="railThemeIcon">☾</span><span class="rail-text">Theme</span></button></nav><button class="mic" id="agentBtn" aria-label="Open Orbit voice assistant">✳</button><div class="toast" id="toast" role="status" aria-live="polite"></div><button id="demoExitFloating" class="demo-exit-floating" type="button" hidden>Exit demo ↗</button>
 <div class="overlay" id="habitManagerOverlay" aria-hidden="true"><section class="sheet habit-manager-sheet" role="dialog" aria-modal="true" aria-labelledby="habitManagerTitle"><div class="handle"></div><div class="sheethead"><div><div class="eyebrow2">MAKE IT YOURS</div><h2 id="habitManagerTitle">Manage habits</h2></div><button class="close" data-close="habitManagerOverlay" aria-label="Close habit manager">×</button></div><p class="habit-manager-intro">Create a routine that fits your real life. Changes update the tracker immediately.</p><form id="habitCreateForm" class="habit-create-form"><div class="field"><label for="newHabitName">HABIT NAME</label><input id="newHabitName" maxlength="48" required placeholder="e.g. Drink 8 glasses of water"></div><div class="field"><label for="newHabitIcon">ICON</label><select id="newHabitIcon"><option value="✦">✦ Sparkle</option><option value="☀">☀ Sun</option><option value="📚">📚 Learn</option><option value="🏃">🏃 Move</option><option value="♡">♡ Wellbeing</option><option value="✎">✎ Journal</option><option value="◈">◈ Focus</option><option value="❄">❄ Reset</option><option value="♧">♧ Nature</option><option value="◉">◉ Mindful</option></select></div><button class="btn primary full" type="submit">＋ Add habit</button></form><div class="habit-manager-list-head"><b>Your habits</b><span id="habitManagerCount">10 habits</span></div><div id="habitManagerList" class="habit-manager-list"></div><div class="habit-manager-note">Removing a habit hides it from future summaries. Its saved checkbox history is kept in this browser.</div></section></div><div class="overlay" id="agentOverlay" aria-hidden="true"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="agentTitle"><div class="handle"></div><div class="sheethead"><div><div class="eyebrow2">ORBIT ASSISTANT</div><h2 id="agentTitle">Let's reshape your day.</h2></div><button class="close" data-close="agentOverlay" aria-label="Close assistant">×</button></div><div class="chat" id="chatWindow"><div class="bubble ai"><span class="ailabel">✦ ORBIT</span>I've left a little breathing room in your plan. What would you like to change?</div><button class="chip" id="examplePrompt">“Push everything after 6pm to tomorrow.”</button></div><div class="diff" id="diffCard"><div class="difftitle"><span>WHAT-IF PREVIEW</span><span style="color:var(--green)">No changes yet</span></div><div class="diffrow"><div class="before">Dinner<small>Today · 6:00 PM</small></div><div class="arrow">→</div><div class="after">Dinner<small>Tomorrow · 6:00 PM</small></div></div><div class="diffrow"><div class="before">Revision sprint<small>Today · 7:00 PM</small></div><div class="arrow">→</div><div class="after">Revision sprint<small>Tomorrow · 7:00 PM</small></div></div><div class="diffrow"><div class="before">Lab report buffer<small>Today · 8:15 PM</small></div><div class="arrow">→</div><div class="after">Lab report buffer<small>Tomorrow · 8:15 PM</small></div></div></div><button class="btn primary full" id="applyDiffBtn" style="display:none;margin-bottom:10px">Apply new schedule ↗</button><div class="compose"><input class="chatinput" id="agentInput" placeholder="Say or type: add today's task…" aria-label="Message Orbit"><button class="send" id="agentMic" aria-label="Speak to Orbit" title="Speak to Orbit">🎙</button><button class="send" id="agentMic" aria-label="Speak to Orbit" title="Speak to Orbit">🎙</button><button class="send" id="sendAgent" aria-label="Send message">↑</button></div><div class="footnote">Your schedule won't change until you tap Apply.</div></section></div>
 <div class="overlay focusoverlay" id="focusOverlay" aria-hidden="true"><section class="focusview" role="dialog" aria-modal="true" aria-labelledby="focusTitle"><div class="focustop"><button class="icon" id="closeFocus" aria-label="Close task focus">×</button><div class="focuscount">FOCUS MODE · <span id="focusIndex">TASK 03</span></div><button class="icon" id="focusMore" aria-label="Task options">···</button></div><div class="focusbody"><div class="focusicon" id="focusIcon">✦</div><div class="focuscat" id="focusCategory">DEEP WORK</div><h1 class="focustitle" id="focusTitle">ADA problem set</h1><div class="focusmeta" id="focusMeta">Quiet time, one problem at a time.<br>You've got this.</div><div class="countdown" id="countdown">01:30:00</div><div class="caption">TIME LEFT IN THIS BLOCK</div><div class="focusprogress"><span id="focusTimerProgress"></span></div></div><div class="voicehint"><b>◉</b> Say “done”, “snooze 10 minutes”, or “skip”</div><div class="focusactions"><button class="btn primary" id="focusDone">✓ &nbsp; Done</button><button class="btn" id="focusSnooze">Ⅱ &nbsp; Snooze</button><button class="btn" id="focusSkip">↷ &nbsp; Skip</button></div><button class="quickvoice" id="focusVoice">✳ &nbsp; Reply with your voice</button></section></div>
+<elevenlabs-convai id="orbitElevenLabsWidget" agent-id="agent_5101m4r35bare2eaw7k23vj0y65c" variant="expandable" dismissible="true" action-text="Orbit voice assistant" style="display:none;position:fixed;right:18px;bottom:100px;z-index:1400" avatar-orb-color-1="#8978ff" avatar-orb-color-2="#7cdbb6"></elevenlabs-convai>
 <script>
 (function(){
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
@@ -1046,6 +1047,7 @@ const demoTasks=[
 let tasks=[];
 let orbitDemoMode=false, orbitRealTaskSnapshot=[], orbitWorkspaces=[], orbitWorkspaceId=null, orbitSessionActive=false, orbitUserId='', orbitUserEmail='', orbitDisplayName='';
 let orbitReminderInterval=null,orbitReminderPollBusy=false,orbitNotificationCache=[],orbitNotificationFilter='all';
+function orbitUpdateElevenLabsAvailability(){const widget=$('#orbitElevenLabsWidget');if(widget)widget.style.display=(orbitSessionActive&&!orbitDemoMode)?'block':'none';}
 function orbitRenderNotificationRows(){
  const host=$('#notificationsList');if(!host)return;host.innerHTML='';let visible=0;
  const filtered=orbitNotificationCache.filter(n=>orbitNotificationFilter==='all'||(orbitNotificationFilter==='tasks'?n.kind==='task_reminder':n.kind!=='task_reminder'));
@@ -1427,6 +1429,7 @@ function orbitEnterDemo(){
  $('#groupManagementDashboard').hidden=true;
  if(!orbitDemoMode)orbitRealTaskSnapshot=tasks.map(t=>({...t}));
  orbitDemoMode=true;
+ orbitUpdateElevenLabsAvailability();
  tasks.splice(0,tasks.length,...demoTasks.map(t=>({...t,serverId:undefined})));
  state.id=Math.max(20,...tasks.map(t=>Number(t.id)||0));
  $('#orbitAuth').hidden=true;
@@ -1438,6 +1441,7 @@ function orbitEnterDemo(){
 async function orbitExitDemo(){
  if(!orbitDemoMode)return;
  orbitDemoMode=false;
+ orbitUpdateElevenLabsAvailability();
  tasks.splice(0,tasks.length,...orbitRealTaskSnapshot.map(t=>({...t})));
  orbitRealTaskSnapshot=[];
  $('#demoToggle').textContent='▷ Demo';$('#demoToggle').classList.remove('is-demo');
@@ -1784,9 +1788,10 @@ document.getElementById('orbitSignOut').addEventListener('click',async()=>{
   const {data:{session},error}=await window.orbitSupabase.auth.getSession();if(error)throw error;
   if(session){orbitSessionActive=true;orbitUserId=session.user?.id||'';orbitUserEmail=session.user?.email||'';orbitUpdateGreeting(session.user);orbitLoadHabitScope();if(!orbitDemoMode){orbitAuthPanel.hidden=true;document.getElementById('orbitSignOut').hidden=false;await orbitRestoreWorkspaceSelection();orbitCheckUpcomingReminders();orbitLoadNotifications();orbitStartReminderPolling();}}
   else{orbitSessionActive=false;orbitUserId='';orbitUserEmail='';orbitWorkspaceId=null;orbitLoadHabitScope();document.getElementById('orbitSignOut').hidden=true;if(!orbitDemoMode){orbitAuthPanel.hidden=false;tasks.splice(0,tasks.length);refreshTaskViews();}}
+  orbitUpdateElevenLabsAvailability();
   window.orbitSupabase.auth.onAuthStateChange((event,session)=>{
-   if(event==='SIGNED_IN'&&session){orbitSessionActive=true;orbitUserId=session.user?.id||'';orbitUserEmail=session.user?.email||'';orbitUpdateGreeting(session.user);orbitLoadHabitScope();if(!orbitDemoMode){orbitAuthPanel.hidden=true;document.getElementById('orbitSignOut').hidden=false;orbitRestoreWorkspaceSelection();orbitCheckUpcomingReminders();orbitLoadNotifications();orbitStartReminderPolling();}}
-   if(event==='SIGNED_OUT'){orbitSessionActive=false;orbitUserId='';orbitUserEmail='';orbitDisplayName='';if(orbitReminderInterval){clearInterval(orbitReminderInterval);orbitReminderInterval=null;}orbitWorkspaceId=null;orbitWorkspaces=[];$('#groupManagementDashboard').hidden=true;$('#dashboardGroupMembers').innerHTML='';$('#dashboardGroupInviteCode').textContent='';orbitLoadHabitScope();$('#workspaceName').textContent='Orbit Pro';$('#workspaceSubtitle').textContent='Personal workspace';$('#groupWorkspaceItems').innerHTML='';document.getElementById('orbitSignOut').hidden=true;if(!orbitDemoMode){tasks.splice(0,tasks.length);orbitAuthPanel.hidden=false;refreshTaskViews();}}
+   if(event==='SIGNED_IN'&&session){orbitSessionActive=true;orbitUpdateElevenLabsAvailability();orbitUserId=session.user?.id||'';orbitUserEmail=session.user?.email||'';orbitUpdateGreeting(session.user);orbitLoadHabitScope();if(!orbitDemoMode){orbitAuthPanel.hidden=true;document.getElementById('orbitSignOut').hidden=false;orbitRestoreWorkspaceSelection();orbitCheckUpcomingReminders();orbitLoadNotifications();orbitStartReminderPolling();}}
+   if(event==='SIGNED_OUT'){orbitSessionActive=false;orbitUpdateElevenLabsAvailability();orbitUserId='';orbitUserEmail='';orbitDisplayName='';if(orbitReminderInterval){clearInterval(orbitReminderInterval);orbitReminderInterval=null;}orbitWorkspaceId=null;orbitWorkspaces=[];$('#groupManagementDashboard').hidden=true;$('#dashboardGroupMembers').innerHTML='';$('#dashboardGroupInviteCode').textContent='';orbitLoadHabitScope();$('#workspaceName').textContent='Orbit Pro';$('#workspaceSubtitle').textContent='Personal workspace';$('#groupWorkspaceItems').innerHTML='';document.getElementById('orbitSignOut').hidden=true;if(!orbitDemoMode){tasks.splice(0,tasks.length);orbitAuthPanel.hidden=false;refreshTaskViews();}}
    if(event==='PASSWORD_RECOVERY'){orbitSessionActive=true;orbitSetAuthMode('update');orbitAuthPanel.hidden=false;}
   });
   orbitAuthReady=true;
@@ -1815,6 +1820,47 @@ async function orbitLoadTasks(){
  }catch(e){if(!String(e.message||'').includes('sign in'))toast('Could not sync your tasks: '+e.message)}
 }
 
+	async function orbitRunElevenLabsCommand(args={}){
+ const message=String(args?.message||'').trim().slice(0,1200);
+ if(!message)return {success:false,reply:'I did not receive a task request. Please repeat it.'};
+ if(orbitDemoMode)return {success:false,reply:'Please exit demo mode and sign in to your Orbit account to manage saved tasks.'};
+ if(!window.orbitSupabase)return {success:false,reply:'Orbit account services are still loading. Please try again.'};
+ try{
+  const {data:{session},error:sessionError}=await window.orbitSupabase.auth.getSession();
+  if(sessionError||!session?.user||!session.access_token){orbitAuthPanel.hidden=false;return {success:false,reply:'Please sign in to Orbit first. Your tasks are only available in your signed-in account.'};}
+  const response=await orbitAuthorizedFetch('/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',workspace_id:orbitWorkspaceId})});
+  let data={};try{data=await response.json()}catch(_){}
+  if(!response.ok)return {success:false,reply:String(data.error||'Orbit could not complete that request. Please try again.').slice(0,500),retryable:!!data.retryable};
+  const action=String(data.action||'help');
+  if(['add_task','complete_task','skip_task','snooze_task'].includes(action))await orbitLoadTasks();
+  if(action==='open_view')orbitNavigateFromVoice(data.view||'today');
+  const task=data.task?{title:String(data.task.title||'').slice(0,180),status:String(data.task.status||''),due_date:data.task.due_date||null,starts_at:data.task.starts_at||null,duration_minutes:Number(data.task.duration_minutes)||null}:null;
+  const changes=Array.isArray(data.changes)?data.changes.slice(0,12).map(c=>typeof c==='string'?c.slice(0,240):({task:String(c?.task||c?.title||'').slice(0,180),from:String(c?.from||c?.old_time||'').slice(0,80),to:String(c?.to||c?.new_time||'').slice(0,80),reason:String(c?.reason||'').slice(0,180)})):undefined;
+  const reply=String(data.reply||(action==='plan_change'?'Here is a proposed schedule change. Please review it before applying.':'Orbit processed your request.')).slice(0,700);
+  return {success:true,action,reply,...(task?{task}:{}),...(changes?{changes}:{})};
+ }catch(error){
+  console.error('[orbit elevenlabs tool] request failed',String(error?.message||error).slice(0,200));
+  return {success:false,reply:String(error?.message||'Orbit could not reach your account. Please try again.').slice(0,400)};
+ }
+}
+function orbitNavigateFromVoice(view){
+ const v=String(view||'today').toLowerCase();
+ if(v.includes('progress')||v.includes('insight')||v.includes('stats')){go('stats');return;}
+ if(v.includes('today')&&!v.includes('plan')){go('home');return;}
+ go('plan');
+ const selected=v.includes('month')?'month':(v.includes('week')?'week':'daily');
+ $$('[data-plan]').forEach(b=>{b.classList.toggle('active',b.dataset.plan===selected);b.setAttribute('aria-selected',b.dataset.plan===selected?'true':'false');});
+ $('#weekPane').style.display=selected==='week'?'block':'none';
+ $('#monthPane').style.display=selected==='month'?'block':'none';
+ $('#dailyPane').style.display=selected==='daily'?'block':'none';
+ if(selected==='week')renderWeek();
+ if(selected==='month')renderMonth();
+ if(selected==='daily')renderHabitMatrix();
+}
+const orbitVoiceWidget=$('#orbitElevenLabsWidget');
+if(orbitVoiceWidget)orbitVoiceWidget.addEventListener('elevenlabs-convai:call',event=>{
+ if(event?.detail?.config)event.detail.config.clientTools={...(event.detail.config.clientTools||{}),orbitAssistant:orbitRunElevenLabsCommand};
+});
 	renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderBars();renderDashboard();
 })();
 </script>
