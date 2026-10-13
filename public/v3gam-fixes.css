@@ -1,4 +1,6 @@
-/* V3GAM registration, workspace exit and compact branding additions. */
+/* V3GAM registration, workspace exit, compact branding and voice UI adjustments. */
+/* The user wants the AI assistant to be text-only: remove microphone controls from its composer. */
+#agentMic,.compose #agentMic{display:none!important}
 #orbitUsernameWrap[hidden],#workspaceDetailExit[hidden]{display:none!important}
 #orbitUsernameWrap{margin:0 0 2px}
 #orbitUsernameWrap label{display:block;font-size:11px;color:#c7cbe0;margin:13px 0 7px}
