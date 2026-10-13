@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* V3GAM sign-in visual theme. Intentionally scoped to the auth overlay only. */
+.orbit-auth{
+  --v3g-green:#34B36B;
+  --v3g-glow:rgba(52,179,107,.35);
+  --v3g-green-dark:#0A2A18;
+  --v3g-ink:#14110F;
+  --v3g-amber:#E8A33D;
+  --v3g-muted:#A8A59E;
+  position:fixed;
+  isolation:isolate;
+  overflow:auto;
+  background:
+    radial-gradient(ellipse at 16% 13%,rgba(52,179,107,.22),transparent 34%),
+    radial-gradient(ellipse at 85% 83%,rgba(232,163,61,.10),transparent 30%),
+    linear-gradient(135deg,#07190F 0%,#0A2A18 46%,#14110F 100%) !important;
+  color:#F4F5EE !important;
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif !important;
+}
+.orbit-auth::before{
+  position:fixed;
+  content:"";
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.18;
+  background-image:radial-gradient(rgba(255,255,255,.32) .65px,transparent .65px);
+  background-size:21px 21px;
+  mask-image:linear-gradient(to bottom right,black,transparent 80%);
+}
+.orbit-auth::after{
+  position:fixed;
+  content:"";
+  z-index:-1;
+  width:min(68vw,600px);
+  aspect-ratio:1;
+  left:calc(50% - min(34vw,300px));
+  top:calc(50% - min(34vw,300px));
+  border-radius:50%;
+  background:rgba(52,179,107,.075);
+  filter:blur(80px);
+  pointer-events:none;
+}
+.orbit-auth-card{
+  position:relative;
+  isolation:isolate;
+  width:min(100%,460px) !important;
+  padding:clamp(26px,4vw,38px) !important;
+  border:1px solid transparent !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,rgba(20,43,27,.97),rgba(16,25,18,.97)) padding-box,
+    linear-gradient(135deg,rgba(92,220,136,.52),rgba(255,255,255,.10) 48%,rgba(232,163,61,.25)) border-box !important;
+  box-shadow:0 34px 90px rgba(0,0,0,.42),0 0 48px rgba(52,179,107,.09),inset 0 1px 0 rgba(255,255,255,.12) !important;
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  color:#F4F5EE !important;
+}
+.orbit-auth-card::after{
+  position:absolute;
+  content:"";
+  z-index:-1;
+  top:0;
+  left:0;
+  right:0;
+  height:125px;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.045),transparent 75%);
+}
+.orbit-auth-mark{
+  position:relative;
+  width:44px !important;
+  height:44px !important;
+  margin:0 0 22px !important;
+  border-radius:13px !important;
+  display:grid !important;
+  place-items:center !important;
+  color:#062111 !important;
+  background:linear-gradient(145deg,#3FD07F,#1E7A47) !important;
+  border:1px solid rgba(149,255,185,.36);
+  box-shadow:0 8px 22px var(--v3g-glow),inset 0 1px 0 rgba(255,255,255,.52);
+  font-family:"Space Grotesk",sans-serif !important;
+  font-size:23px !important;
+}
+.orbit-auth-mark::after{
+  content:"V3GAM";
+  position:absolute;
+  left:56px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#F3F5EE;
+  font:700 18px/1 "Space Grotesk",sans-serif;
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+.orbit-auth h1{
+  color:#F6F7F1 !important;
+  font:700 clamp(27px,4vw,31px)/1.13 "Space Grotesk",sans-serif !important;
+  letter-spacing:-1.1px !important;
+  margin:0 0 11px !important;
+}
+.orbit-auth p{
+  color:#B1BEB0 !important;
+  font:400 12px/1.8 "Plus Jakarta Sans",sans-serif !important;
+}
+.orbit-auth #orbitAuthSubtitle{margin-bottom:23px !important;max-width:355px}
+.orbit-auth label{
+  color:#D0D9CF !important;
+  font:700 10px/1.4 "Plus Jakarta Sans",sans-serif !important;
+  letter-spacing:.015em;
+  margin:14px 0 7px !important;
+}
+.orbit-auth input{
+  height:49px !important;
+  padding:0 14px !important;
+  color:#F4F6EF !important;
+  background:rgba(4,14,8,.56) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:12px !important;
+  font:500 12px "Plus Jakarta Sans",sans-serif !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+}
+.orbit-auth input::placeholder{color:#78877A;opacity:1}
+.orbit-auth input:hover{border-color:rgba(255,255,255,.2) !important}
+.orbit-auth input:focus{
+  outline:0 !important;
+  border-color:rgba(52,179,107,.9) !important;
+  box-shadow:0 0 0 3px rgba(52,179,107,.15),0 0 22px rgba(52,179,107,.07) !important;
+  background:rgba(4,14,8,.75) !important;
+}
+.orbit-auth .auth-primary{
+  width:100%;
+  min-height:49px;
+  height:auto !important;
+  margin-top:20px !important;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(145,255,181,.32) !important;
+  border-radius:12px !important;
+  color:#06180C !important;
+  background:linear-gradient(135deg,#48D583 0%,#34B36B 55%,#238B4B 100%) !important;
+  box-shadow:0 9px 24px rgba(52,179,107,.19),inset 0 1px 0 rgba(255,255,255,.38);
+  font:800 12px "Plus Jakarta Sans",sans-serif !important;
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+.orbit-auth .auth-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(52,179,107,.31),inset 0 1px 0 rgba(255,255,255,.45)}
+.orbit-auth .auth-primary:active{transform:scale(.985)}
+.orbit-auth .auth-link{
+  display:inline-block;
+  min-height:36px;
+  padding:12px 6px 0 !important;
+  color:#8CEBA9 !important;
+  font:600 11px "Plus Jakarta Sans",sans-serif !important;
+  transition:color .2s ease;
+}
+.orbit-auth .auth-link:hover{color:#C4F6D0 !important;text-decoration:underline;text-underline-offset:3px}
+.orbit-auth .auth-demo{
+  min-height:45px !important;
+  margin-top:14px !important;
+  padding:0 12px;
+  border:1px solid rgba(232,163,61,.3) !important;
+  border-radius:12px !important;
+  color:#EBD1A0 !important;
+  background:linear-gradient(135deg,rgba(232,163,61,.095),rgba(255,255,255,.025)) !important;
+  font:700 11px "Plus Jakarta Sans",sans-serif !important;
+  transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+.orbit-auth .auth-demo:hover{transform:translateY(-1px);border-color:rgba(232,163,61,.55) !important;background:rgba(232,163,61,.13) !important}
+.orbit-auth .auth-msg{min-height:18px;margin:13px 0 0 !important;color:#8CEBA9 !important;font:500 11px/1.6 "Plus Jakarta Sans",sans-serif !important}
+.orbit-auth .auth-msg.auth-error{color:#FF9EAA !important}
+.orbit-auth[hidden]{display:none!important}
+@media(max-width:500px){
+  .orbit-auth{padding:max(18px,env(safe-area-inset-top)) 15px max(18px,env(safe-area-inset-bottom)) !important}
+  .orbit-auth-card{width:100% !important;padding:25px 22px !important;border-radius:21px !important}
+  .orbit-auth-mark{margin-bottom:21px !important}
+}
+@media(prefers-reduced-motion:reduce){
+  .orbit-auth *, .orbit-auth *::before, .orbit-auth *::after{transition:none!important;animation:none!important}
+}
