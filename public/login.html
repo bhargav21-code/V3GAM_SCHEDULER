@@ -1888,7 +1888,7 @@ function orbitNavigateFromVoice(view){
 }
 const orbitVoiceWidget=$('#orbitElevenLabsWidget');
 if(orbitVoiceWidget)orbitVoiceWidget.addEventListener('elevenlabs-convai:call',event=>{
- if(event?.detail?.config)event.detail.config.clientTools={...(event.detail.config.clientTools||{}),orbitAssistant:orbitRunElevenLabsCommand};
+ if(event?.detail?.config)event.detail.config.clientTools={...(event.detail.config.clientTools||{}),V3GAMAssistant:orbitRunElevenLabsCommand};
 });
 	// Enforce the V3GAM wordmark in the signed-in dashboard header.
   function v3gamRefreshVisibleBrand(){
