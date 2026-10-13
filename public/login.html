@@ -1920,6 +1920,56 @@ if(orbitVoiceWidget)orbitVoiceWidget.addEventListener('elevenlabs-convai:call',e
   }
   v3gamRefreshVisibleBrand();
   v3gamReplaceLegacySidebarBrand();
+  // Keep the visible sidebar wordmark correct even if legacy app chrome is re-rendered.
+  function v3gamForceSidebarWordmark(){
+    document.querySelectorAll('.wb-brand,.sidebar-brand,.sidebar-logo,.nav-brand,.brand-name').forEach(node=>{
+      if(/orbit\s*workspace/i.test(node.textContent||'')){
+        const small=document.createElement('small');small.textContent='WORKSPACE';
+        const label=node.querySelector('span:last-child')||node;
+        label.replaceChildren(document.createTextNode('V3GAM '),small);
+      }
+    });
+    document.querySelectorAll('body *').forEach(el=>{
+      if(el.children.length) return;
+      if(/^ORBIT\s+WORKSPACE$/i.test((el.textContent||'').trim()))el.textContent='V3GAM WORKSPACE';
+    });
+  }
+  v3gamForceSidebarWordmark();
+  const v3gamSidebarObserver=new MutationObserver(v3gamForceSidebarWordmark);
+  v3gamSidebarObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
+  // A real-time clock uses the visitor's device timezone and updates every second.
+  function v3gamEnsureLiveClock(){
+    const bar=document.querySelector('.workspace-bar');
+    if(!bar)return;
+    let clock=document.getElementById('v3gamLiveClock');
+    if(!clock){
+      clock=document.createElement('div');clock.id='v3gamLiveClock';clock.setAttribute('role','timer');clock.setAttribute('aria-label','Current local time');
+      const anchor=bar.querySelector('.workspace-select-wrap')||bar.firstElementChild;
+      if(anchor&&anchor.parentNode)anchor.insertAdjacentElement('afterend',clock);else bar.appendChild(clock);
+    }
+    const now=new Date();
+    clock.replaceChildren(document.createTextNode(new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(now)));
+    const date=document.createElement('small');date.textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now);clock.appendChild(date);
+  }
+  v3gamEnsureLiveClock();
+  window.setInterval(v3gamEnsureLiveClock,1000);
+  // Remove the voice-call/mic control from the embedded ElevenLabs widget but leave chat enabled.
+  function v3gamHideAssistantMic(){
+    document.querySelectorAll('elevenlabs-convai').forEach(widget=>{
+      const root=widget.shadowRoot;
+      if(!root)return;
+      root.querySelectorAll('button').forEach(button=>{
+        const label=[button.getAttribute('aria-label'),button.getAttribute('title'),button.textContent].filter(Boolean).join(' ').toLowerCase();
+        if(/microphone|mic\b|voice call|call assistant|start call|speak/.test(label)){
+          button.style.setProperty('display','none','important');
+          button.setAttribute('aria-hidden','true');
+        }
+      });
+    });
+  }
+  v3gamHideAssistantMic();
+  const v3gamWidgetObserver=new MutationObserver(v3gamHideAssistantMic);
+  v3gamWidgetObserver.observe(document.body,{childList:true,subtree:true});
   const v3gamLegacyBrandObserver=new MutationObserver(v3gamReplaceLegacySidebarBrand);
   v3gamLegacyBrandObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
   const v3gamBrandObserver=new MutationObserver(v3gamRefreshVisibleBrand);

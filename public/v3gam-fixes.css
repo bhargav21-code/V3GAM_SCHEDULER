@@ -1,6 +1,10 @@
 /* V3GAM registration, workspace exit, compact branding and voice UI adjustments. */
 /* The user wants the AI assistant to be text-only: remove microphone controls from its composer. */
 #agentMic,.compose #agentMic{display:none!important}
+#v3gamLiveClock{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:9px 12px;border:1px solid rgba(0,0,0,.08);border-radius:999px;background:rgba(255,255,255,.72);color:#26351f;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+#v3gamLiveClock:before{content:"";width:7px;height:7px;border-radius:50%;background:#34b36b;box-shadow:0 0 0 3px rgba(52,179,107,.14)}
+#v3gamLiveClock small{font-size:9px;font-weight:600;opacity:.68}
+@media(max-width:700px){#v3gamLiveClock{padding:8px;font-size:10px;gap:5px}#v3gamLiveClock small{display:none}}
 #orbitUsernameWrap[hidden],#workspaceDetailExit[hidden]{display:none!important}
 #orbitUsernameWrap{margin:0 0 2px}
 #orbitUsernameWrap label{display:block;font-size:11px;color:#c7cbe0;margin:13px 0 7px}
