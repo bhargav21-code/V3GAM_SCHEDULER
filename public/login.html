@@ -1902,7 +1902,18 @@ if(orbitVoiceWidget)orbitVoiceWidget.addEventListener('elevenlabs-convai:call',e
       personalName.textContent='V3GAM Pro';
     }
   }
+  function v3gamReplaceLegacySidebarBrand(){
+    document.querySelectorAll('body *').forEach(el=>{
+      if(el.children.length) return;
+      const label=(el.textContent||'').trim();
+      if(/^ORBIT\s+WORKSPACE$/i.test(label)) el.textContent='V3GAM WORKSPACE';
+      else if(/^ORBIT$/i.test(label)) el.textContent='V3GAM';
+    });
+  }
   v3gamRefreshVisibleBrand();
+  v3gamReplaceLegacySidebarBrand();
+  const v3gamLegacyBrandObserver=new MutationObserver(v3gamReplaceLegacySidebarBrand);
+  v3gamLegacyBrandObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
   const v3gamBrandObserver=new MutationObserver(v3gamRefreshVisibleBrand);
   const v3gamBrandNode=document.querySelector('.wb-brand');
   if(v3gamBrandNode)v3gamBrandObserver.observe(v3gamBrandNode,{childList:true,subtree:true,characterData:true});
