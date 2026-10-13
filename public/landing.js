@@ -1,5 +1,5 @@
 (() => {
-  const APP = 'Orbit';
+  const APP = 'V3GAM';
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const path = {
@@ -26,7 +26,7 @@
     return '<svg class="lucide ' + (extra || '') + '" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (path[name] || path.sparkles) + '</svg>';
   }
   function Brand() {
-    return '<a class="brand" href="/" aria-label="Orbit home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span class="brand-name">Orbit<small>AI TASK SCHEDULER</small></span></a>';
+    return '<a class="brand" href="/" aria-label="V3GAM home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span class="brand-name">V3GAM<small>AI TASK SCHEDULER</small></span></a>';
   }
   function Hero() {
     return '<section class="hero section-shell" id="about"><div class="hero-atmosphere" aria-hidden="true"><span class="orb orb-green"></span><span class="orb orb-cream"></span><span class="orb orb-blue"></span></div>' +
@@ -53,7 +53,7 @@
       {icon:'clock', title:'A focus mode for getting it done', body:'Start a task with its own timer, track the time left, and choose to finish, snooze, or skip when life changes.'},
       {icon:'checkCircle', title:'Habits and progress that add up', body:'Track daily routines, see your streaks and completion trends, and celebrate the steady work behind bigger goals.'},
       {icon:'shield', title:'Personal and group workspaces', body:'Keep your own plan private, or join a shared space for group tasks, members, and plans that stay organized together.'},
-      {icon:'route', title:'A voice assistant that takes action', body:'Ask Orbit to add or update tasks, check your schedule, or open progress. Actions use your signed-in account and return a real result.'}
+      {icon:'route', title:'A voice assistant that takes action', body:'Ask V3GAM to add or update tasks, check your schedule, or open progress. Actions use your signed-in account and return a real result.'}
     ];
     return '<section class="features-section section-shell" id="features"><div class="content-width"><div class="problem-intro" data-reveal><span class="section-kicker section-kicker-light">A BETTER WAY TO PLAN</span><h2>To-do lists ignore the<br class="desktop-break"> one thing that matters.</h2><p>They store what you need to do, but never when. Tasks have duration, deadlines and conflicts, and pretending otherwise is how days fall apart.</p></div>' +
       '<div class="features-heading" data-reveal><div><span class="section-kicker section-kicker-green">PURPOSE-BUILT FOR REAL LIFE</span><h2>Built to make your day fit.</h2></div><p>A deterministic engine decides when. A light AI layer only understands your words and explains the plan.</p></div>' +
@@ -75,7 +75,7 @@
     return '<footer class="site-footer" id="footer"><div class="footer-inner content-width"><div class="footer-top"><div class="footer-brand-block">' + Brand() + '<p>Plan real days, not just lists.</p></div>' +
       '<div class="footer-links"><div class="footer-column"><h3>Product</h3><a href="#features">Features</a><a href="#how-it-works">How it works</a></div><div class="footer-column"><h3>Company</h3><a href="#about">About</a><a href="#how-it-works">How it works</a></div><div class="footer-column"><h3>Legal</h3><a href="#privacy" data-legal="privacy">Privacy</a><a href="#terms" data-legal="terms">Terms</a></div></div>' +
       '<a class="footer-start" href="/login">Get started ' + Icon('arrowUpRight') + '</a></div><div class="footer-bottom"><span>© 2026 ' + APP + '. All rights reserved.</span><span>Plan real days, not just lists.</span></div></div></footer>' +
-      '<dialog class="legal-dialog" id="legal-dialog" aria-labelledby="legal-title"><form method="dialog"><button class="dialog-close" aria-label="Close">' + Icon('close') + '</button></form><span class="section-kicker">ORBIT · INFORMATION</span><h2 id="legal-title">Privacy</h2><p id="legal-copy"></p><button class="button button-primary dialog-done" type="button" data-dialog-close>Close</button></dialog>';
+      '<dialog class="legal-dialog" id="legal-dialog" aria-labelledby="legal-title"><form method="dialog"><button class="dialog-close" aria-label="Close">' + Icon('close') + '</button></form><span class="section-kicker">V3GAM · INFORMATION</span><h2 id="legal-title">Privacy</h2><p id="legal-copy"></p><button class="button button-primary dialog-done" type="button" data-dialog-close>Close</button></dialog>';
   }
   const root = $('#landing-app');
   if (!root) return;
@@ -136,8 +136,8 @@
     const isTerms = link.dataset.legal === 'terms';
     $('#legal-title', legal).textContent = isTerms ? 'Terms' : 'Privacy';
     $('#legal-copy', legal).textContent = isTerms
-      ? 'Orbit is a planning aid. Review suggested changes before applying them, keep your sign-in secure, and use the service responsibly. Specific terms may be updated as the product evolves.'
-      : 'Your schedule belongs to you. Orbit uses your signed-in account and workspace permissions to protect saved tasks. Review your account settings for controls over your data.';
+      ? 'V3GAM is a planning aid. Review suggested changes before applying them, keep your sign-in secure, and use the service responsibly. Specific terms may be updated as the product evolves.'
+      : 'Your schedule belongs to you. V3GAM uses your signed-in account and workspace permissions to protect saved tasks. Review your account settings for controls over your data.';
     if (legal && legal.showModal) legal.showModal();
   }));
   $('[data-dialog-close]', legal)?.addEventListener('click', () => legal.close());

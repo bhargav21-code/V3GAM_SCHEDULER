@@ -1,4 +1,4 @@
-name = "Orbit AI Task Scheduler"
+name = "V3GAM AI Task Scheduler"
 tagline = "Your AI-powered daily planner"
 description = "Voice-first task scheduling, habits, and personal productivity."
 category = "Productivity"
@@ -13,7 +13,7 @@ providers = ["google", "openai", "anthropic"]
 [[secret]]
 name = "SUPABASE_URL"
 required = true
-description = "URL of the Supabase project used for Orbit email/password authentication."
+description = "URL of the Supabase project used for V3GAM email/password authentication."
 
 [[secret]]
 name = "SUPABASE_ANON_KEY"

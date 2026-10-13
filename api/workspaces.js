@@ -30,13 +30,27 @@ export default async function (req, res) {
   }
 
   if (req.method === 'DELETE') {
-    const workspaceId=Number(req.query?.workspace_id), targetUserId=String(req.query?.user_id||'');
-    if(!Number.isSafeInteger(workspaceId)||workspaceId<1||!targetUserId)return json(res,400,{error:'Workspace and member are required.'});
+    const workspaceId=Number(req.query?.workspace_id);
+    if(!Number.isSafeInteger(workspaceId)||workspaceId<1)return json(res,400,{error:'A valid workspace is required.'});
     const {rows:ws}=await db.query('SELECT owner_id FROM orbit_workspaces WHERE id=$1',[workspaceId]);
     if(!ws.length)return json(res,404,{error:'Workspace not found.'});
+    const targetUserId=String(req.query?.user_id||'').trim();
+
+    // Without a target user, a member is asking to leave this workspace themselves.
+    if(!targetUserId){
+      if(ws[0].owner_id===userId)return json(res,400,{error:'Workspace owners cannot exit their own group. Transfer ownership or delete the workspace instead.'});
+      const result=await db.query(
+        "WITH moved AS (UPDATE orbit_tasks SET workspace_id=NULL,updated_at=now() WHERE workspace_id=$1 AND user_id=$2 RETURNING id), removed AS (DELETE FROM orbit_workspace_members WHERE workspace_id=$1 AND user_id=$2 AND role='member' RETURNING user_id) SELECT (SELECT COUNT(*)::int FROM removed) AS removed_count,(SELECT COUNT(*)::int FROM moved) AS tasks_moved",
+        [workspaceId,userId]
+      );
+      if(!Number(result.rows[0]?.removed_count))return json(res,404,{error:'You are not a member of this workspace.'});
+      return json(res,200,{ok:true,left_workspace_id:workspaceId,tasks_moved:Number(result.rows[0]?.tasks_moved)||0});
+    }
+
+    // Targeting another user is still restricted to the workspace owner.
     if(ws[0].owner_id!==userId)return json(res,403,{error:'Only the group creator can remove members.'});
     if(targetUserId===userId)return json(res,400,{error:'The creator cannot remove themselves. Transfer ownership or delete the group instead.'});
-    const removed=await db.query('DELETE FROM orbit_workspace_members WHERE workspace_id=$1 AND user_id=$2 AND role<>$3',[workspaceId,targetUserId,'owner']);
+    const removed=await db.query("DELETE FROM orbit_workspace_members WHERE workspace_id=$1 AND user_id=$2 AND role='member'",[workspaceId,targetUserId]);
     if(!removed.rowCount)return json(res,404,{error:'Member not found or cannot be removed.'});
     return json(res,200,{ok:true,removed_user_id:targetUserId});
   }

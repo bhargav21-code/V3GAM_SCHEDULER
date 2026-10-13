@@ -1,0 +1,9 @@
+/* V3GAM registration, workspace exit and compact branding additions. */
+#orbitUsernameWrap[hidden],#workspaceDetailExit[hidden]{display:none!important}
+#orbitUsernameWrap{margin:0 0 2px}
+#orbitUsernameWrap label{display:block;font-size:11px;color:#c7cbe0;margin:13px 0 7px}
+#orbitUsernameWrap input{width:100%;height:47px;border-radius:12px;border:1px solid #38415a;background:#101626;color:#fff;padding:0 13px;font:13px 'DM Sans',sans-serif}
+.workspace-exit-btn{flex:none!important;min-height:35px!important;padding:0 11px!important;border-color:rgba(239,125,139,.42)!important;background:rgba(239,125,139,.08)!important;color:#ef8291!important;font-size:9px!important;font-weight:800!important}
+.workspace-exit-btn:hover{border-color:rgba(239,125,139,.8)!important;background:rgba(239,125,139,.16)!important}
+.workspace-detail-actions #workspaceDetailExit{border-color:rgba(239,125,139,.42);background:rgba(239,125,139,.08);color:#ef8291}
+@media(max-width:500px){.workspace-group-card .workspace-exit-btn{padding:0 7px!important;font-size:8px!important}}
