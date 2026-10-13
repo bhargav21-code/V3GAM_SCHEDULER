@@ -1902,26 +1902,7 @@ if(orbitVoiceWidget)orbitVoiceWidget.addEventListener('elevenlabs-convai:call',e
       personalName.textContent='V3GAM Pro';
     }
   }
-  function v3gamReplaceLegacySidebarBrand(){
-    document.querySelectorAll('body *').forEach(el=>{
-      if(el.children.length) return;
-      const label=(el.textContent||'').trim();
-      if(/^ORBIT\s+WORKSPACE$/i.test(label)) el.textContent='V3GAM WORKSPACE';
-      else if(/^ORBIT$/i.test(label)) el.textContent='V3GAM';
-    });
-    // The legacy sidebar wordmark can be split across nested elements/text nodes.
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
-    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-    nodes.forEach(node=>{
-      if(/\bORBIT\s+WORKSPACE\b/i.test(node.nodeValue))node.nodeValue=node.nodeValue.replace(/\bORBIT\s+WORKSPACE\b/gi,'V3GAM WORKSPACE');
-      else if(/^\s*ORBIT\s*$/i.test(node.nodeValue))node.nodeValue=node.nodeValue.replace(/ORBIT/gi,'V3GAM');
-    });
-    });
-  }
   v3gamRefreshVisibleBrand();
-  v3gamReplaceLegacySidebarBrand();
-  const v3gamLegacyBrandObserver=new MutationObserver(v3gamReplaceLegacySidebarBrand);
-  v3gamLegacyBrandObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
   const v3gamBrandObserver=new MutationObserver(v3gamRefreshVisibleBrand);
   const v3gamBrandNode=document.querySelector('.wb-brand');
   if(v3gamBrandNode)v3gamBrandObserver.observe(v3gamBrandNode,{childList:true,subtree:true,characterData:true});
