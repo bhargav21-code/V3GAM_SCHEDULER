@@ -1890,7 +1890,25 @@ const orbitVoiceWidget=$('#orbitElevenLabsWidget');
 if(orbitVoiceWidget)orbitVoiceWidget.addEventListener('elevenlabs-convai:call',event=>{
  if(event?.detail?.config)event.detail.config.clientTools={...(event.detail.config.clientTools||{}),orbitAssistant:orbitRunElevenLabsCommand};
 });
-	renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderBars();renderDashboard();
+	// Enforce the V3GAM wordmark in the signed-in dashboard header.
+  function v3gamRefreshVisibleBrand(){
+    const brandLabel=document.querySelector('.wb-brand > span:last-child');
+    if(brandLabel&&!brandLabel.textContent.trim().toUpperCase().startsWith('V3GAM')){
+      const small=document.createElement('small');small.textContent='WORKSPACE';
+      brandLabel.replaceChildren(document.createTextNode('V3GAM '),small);
+    }
+    const personalName=$('#workspaceName');
+    if(personalName&&orbitWorkspaceId===null&&/^orbit(?: pro)?$/i.test(personalName.textContent.trim())){
+      personalName.textContent='V3GAM Pro';
+    }
+  }
+  v3gamRefreshVisibleBrand();
+  const v3gamBrandObserver=new MutationObserver(v3gamRefreshVisibleBrand);
+  const v3gamBrandNode=document.querySelector('.wb-brand');
+  if(v3gamBrandNode)v3gamBrandObserver.observe(v3gamBrandNode,{childList:true,subtree:true,characterData:true});
+  const v3gamWorkspaceNameNode=$('#workspaceName');
+  if(v3gamWorkspaceNameNode)new MutationObserver(v3gamRefreshVisibleBrand).observe(v3gamWorkspaceNameNode,{childList:true,subtree:true,characterData:true});
+  renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderBars();renderDashboard();
 })();
 </script>
 </div></div></div>
