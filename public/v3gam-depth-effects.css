@@ -1,0 +1,326 @@
+/* V3GAM depth effects — scoped to the signed-in workspace UI. No layout or color tokens replaced. */
+#app{
+  --shadow-1:0 2px 4px rgba(40,60,25,.06),0 8px 16px rgba(40,60,25,.08),0 24px 48px rgba(40,60,25,.10);
+  --shadow-2:0 4px 8px rgba(40,60,25,.08),0 16px 32px rgba(40,60,25,.14),0 40px 80px rgba(40,60,25,.18);
+  --inner-light:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.04);
+  --glow:0 0 0 1px rgba(107,142,58,.25),0 10px 40px rgba(107,142,58,.35);
+  isolation:isolate;
+}
+#app:not(.light){
+  --shadow-1:0 2px 5px rgba(0,0,0,.24),0 10px 22px rgba(0,0,0,.22),0 25px 50px rgba(0,0,0,.2);
+  --shadow-2:0 4px 9px rgba(0,0,0,.3),0 17px 34px rgba(0,0,0,.28),0 42px 82px rgba(0,0,0,.25);
+  --inner-light:inset 0 1px 0 rgba(169,194,107,.11),inset 0 -1px 0 rgba(0,0,0,.35);
+  --glow:0 0 0 1px rgba(169,194,107,.18),0 12px 42px rgba(70,105,39,.24);
+}
+#app .scroll{padding-bottom:96px!important;scroll-behavior:smooth}
+#app .v3g-ambient-layer{
+  position:absolute;inset:-5%;z-index:-1;pointer-events:none;opacity:.35;
+  background-image:
+    radial-gradient(ellipse at 12% 14%,rgba(169,194,107,.24) 0,transparent 38%),
+    radial-gradient(ellipse at 86% 37%,rgba(107,142,58,.17) 0,transparent 35%),
+    radial-gradient(ellipse at 50% 92%,rgba(201,163,92,.10) 0,transparent 32%),
+    radial-gradient(rgba(107,142,58,.10) .45px,transparent .6px);
+  background-size:520px 520px,460px 460px,420px 420px,8px 8px;
+  animation:v3g-ambient-drift 30s ease-in-out infinite alternate;
+}
+#app:not(.light) .v3g-ambient-layer{
+  opacity:.28;
+  background-image:
+    radial-gradient(ellipse at 12% 14%,rgba(107,142,58,.24) 0,transparent 40%),
+    radial-gradient(ellipse at 86% 37%,rgba(61,90,39,.23) 0,transparent 36%),
+    radial-gradient(ellipse at 50% 92%,rgba(169,194,107,.08) 0,transparent 34%),
+    radial-gradient(rgba(169,194,107,.09) .45px,transparent .6px);
+}
+#app .v3g-cursor-spotlight{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(500px circle at var(--v3g-spot-x,50%) var(--v3g-spot-y,18%),rgba(107,142,58,.08),transparent 62%);opacity:0;transition:opacity .2s ease}
+@media(hover:hover) and (pointer:fine) and (min-width:769px){#app .v3g-cursor-spotlight{opacity:1}}
+#app .v3g-depth-ready{
+  position:relative;
+  isolation:isolate;
+  transform-style:preserve-3d;
+  transform:perspective(1000px) rotateX(var(--v3g-rx,0deg)) rotateY(var(--v3g-ry,0deg)) translateZ(var(--v3g-tz,0px));
+  box-shadow:var(--shadow-1),var(--inner-light)!important;
+  transition:transform 500ms cubic-bezier(.2,.8,.2,1),opacity 250ms ease;
+}
+#app .v3g-depth-ready.v3g-tilting{transition:none!important;will-change:transform}
+#app .v3g-card-glare{
+  position:absolute;inset:0;z-index:-1;display:block;overflow:hidden;
+  border-radius:inherit;pointer-events:none;opacity:.3;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.7),transparent 50%),
+    radial-gradient(circle at var(--v3g-glare-x,50%) var(--v3g-glare-y,35%),rgba(255,255,255,.35),transparent 45%);
+  transition:opacity 250ms ease;
+}
+#app .v3g-tilting .v3g-card-glare{opacity:.5}
+#app .v3g-depth-ready:hover{box-shadow:var(--shadow-2),var(--inner-light),var(--glow)!important}
+#app:not(.light) .v3g-depth-ready{border-color:rgba(169,194,107,.18)}
+#app .metric-card .metric-copy b,
+#app .sumcard .num,
+#app .panel-head h2,
+#app .calendar-title h2,
+#app .project-title-group h1,
+#app .workspace-page-info b,
+#app .workspace-group-info b{transform:translateZ(10px);transform-style:preserve-3d}
+#app .metric-tile,
+#app .panel-title-icon,
+#app .deadline-icon,
+#app .meeting-badge,
+#app .workspace-page-icon,
+#app .workspace-group-icon,
+#app .workspace-detail-stats>div,
+#app .workspace-member-avatar,
+#app .group-owner-manage-icon,
+#app .when-choice-icon,
+#app .selected-task-state{
+  position:relative;isolation:isolate;transform-style:preserve-3d;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.48),inset 0 -4px 8px rgba(0,0,0,.10),0 8px 18px rgba(60,90,30,.24);
+  transition:transform 250ms cubic-bezier(.2,.8,.2,1),box-shadow 250ms ease,filter 250ms ease;
+}
+#app .v3g-icon-specular{
+  position:absolute;top:5px;left:5px;z-index:3;width:6px;height:6px;border-radius:50%;
+  pointer-events:none;background:rgba(255,255,255,.62);box-shadow:0 0 7px rgba(255,255,255,.2);
+}
+#app .metric-tile:hover,
+#app .panel-title-icon:hover,
+#app .deadline-icon:hover,
+#app .meeting-badge:hover,
+#app .workspace-page-icon:hover,
+#app .workspace-group-icon:hover,
+#app .when-choice-icon:hover{transform:translateZ(16px) rotate(6deg);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -4px 8px rgba(0,0,0,.1),0 10px 22px rgba(60,90,30,.35),0 0 16px rgba(107,142,58,.18)}
+#app .nav{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.09),transparent 25%,rgba(0,0,0,.04))!important;
+  box-shadow:8px 0 25px rgba(47,74,30,.2),inset -1px 0 0 rgba(255,255,255,.16)!important;
+  perspective:900px;transform-style:preserve-3d;
+  transition:width 450ms cubic-bezier(.2,.8,.2,1),box-shadow 350ms ease,transform 450ms cubic-bezier(.2,.8,.2,1)!important;
+}
+#app .nav .v3g-sidebar-shimmer{position:absolute;inset:-40% 0;z-index:-1;pointer-events:none;background:linear-gradient(110deg,transparent 25%,rgba(221,238,177,.09) 48%,transparent 70%);transform:translateY(-70%);animation:v3g-sidebar-shimmer 11s ease-in-out infinite}
+#app .nav button:not(.sidebar-toggle){transform:translateZ(0);transform-style:preserve-3d;transition:transform 220ms cubic-bezier(.2,.8,.2,1),background 220ms ease,box-shadow 220ms ease,color 220ms ease!important}
+#app .nav button:not(.sidebar-toggle):hover{transform:translate3d(2px,-1px,8px);box-shadow:0 7px 16px rgba(0,0,0,.10),inset 0 1px rgba(255,255,255,.16)}
+#app .nav button.active{background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.055))!important;border-color:rgba(255,255,255,.16)!important;box-shadow:inset 0 1px rgba(255,255,255,.24),0 7px 20px rgba(0,0,0,.12)!important;transform:translateZ(5px)}
+#app .nav button .ni{display:inline-block;transform:translateZ(0);transition:transform 240ms cubic-bezier(.2,.8,.2,1),filter 240ms ease}
+#app .nav button:hover .ni{transform:translate3d(0,-2px,12px) rotate(-5deg);filter:drop-shadow(0 4px 4px rgba(0,0,0,.18))}
+#app .nav:after{backdrop-filter:blur(12px);box-shadow:inset 0 1px rgba(255,255,255,.2),0 10px 25px rgba(0,0,0,.10);animation:v3g-reminder-float 5s ease-in-out infinite}
+#app .nav .sidebar-toggle{transition:transform 250ms ease,background 250ms ease!important}
+#app.sidebar-collapsed .nav{transform:perspective(1100px) rotateY(0deg);box-shadow:6px 0 25px rgba(47,74,30,.2),inset -1px 0 rgba(255,255,255,.15)!important}
+#app .workspace-bar .wb-symbol{background:transparent!important;box-shadow:none!important;border:0!important;color:var(--olive-700)!important}
+#app:not(.light) .workspace-bar .wb-symbol{color:var(--sage-300)!important}
+#app .panel-head,
+#app .activity-card .panel-head,
+#app .progress-card .panel-head,
+#app .calendar-toolbar,
+#app .calendar-title,
+#app .calendar-tools,
+#app .section,
+#app .monthtop,
+#app .selected-date-title,
+#app .habit-overview-top,
+#app .habit-tracker-heading{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0;
+}
+#app .panel-head{justify-content:space-between}
+#app .panel-head>div:first-child{min-width:0;flex:1 1 120px}
+#app .panel-period{flex:0 1 auto;white-space:nowrap}
+#app .calendar-toolbar{justify-content:space-between;row-gap:10px;padding-bottom:10px}
+#app .calendar-title,#app .calendar-tools{flex:0 1 auto;min-width:0}
+#app .calendar-title{gap:8px}
+#app .calendar-tools{gap:6px}
+#app .calendar-title h2{flex:none}
+#app .calendar-tools button,#app .calendar-title button{flex:0 0 auto}
+#app .calendar-day{min-width:0}
+#app .mini-task{min-width:0;max-width:100%;transform-style:preserve-3d;transition:transform 220ms cubic-bezier(.2,.8,.2,1),box-shadow 220ms ease,border-color 220ms ease}
+#app .mini-task>span{display:-webkit-box;min-width:0;flex:1 1 auto;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:normal;word-break:normal;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#app .mini-task small{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .mini-task:hover{transform:translateY(-2px) translateZ(6px);box-shadow:0 6px 14px rgba(40,60,25,.13),inset 0 1px rgba(255,255,255,.2);border-color:rgba(107,142,58,.32)}
+#app .tasktitle,#app .selected-task-info strong,#app .workspace-task-row b{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#app .tasktitle{white-space:nowrap}
+#app .task-check,#app .habit-check{transform:translateZ(0);transition:transform 180ms cubic-bezier(.2,.8,.2,1),box-shadow 180ms ease,background 180ms ease}
+#app .task-check:active:not(:disabled),#app .habit-check:active:not(:disabled){transform:translateY(2px) scale(.94);box-shadow:inset 0 2px 4px rgba(0,0,0,.17)}
+#app .task-check.checked,#app .habit-check.done{animation:v3g-check-pop 420ms cubic-bezier(.2,.8,.2,1) both}
+/* Completion motion is class-triggered by the effect helper, not replayed on every rerender. */
+#app .v3g-task-completed{animation:v3g-task-complete 380ms ease both}
+#app .track,#app .activity-track,#app .habit-progress-track,#app .deadline-progress,#app .completion-track,#app .focusprogress{
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.32);
+}
+#app .track span,#app .activity-track span,#app .habit-progress-track i,#app .deadline-progress span,#app .completion-track span,#app .focusprogress span{position:relative;overflow:hidden}
+#app .track span:after,#app .activity-track span:after,#app .habit-progress-track i:after,#app .deadline-progress span:after,#app .completion-track span:after,#app .focusprogress span:after{
+  content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.42) 48%,transparent 72%);
+  transform:translateX(-115%);animation:v3g-progress-shine 4s ease-in-out infinite;
+}
+#app .metric-ring,#app .theme-progress-ring,#app #dashboardRingPanel{transform-style:preserve-3d;box-shadow:inset 0 1px 6px rgba(0,0,0,.15),0 8px 20px rgba(60,90,30,.16);animation:v3g-ring-enter 1s cubic-bezier(.2,.8,.2,1) both}
+#app .metric-ring:after{box-shadow:inset 0 1px 4px rgba(0,0,0,.10)}
+#app .activity-bar-group{min-width:0;perspective:700px}
+#app .activity-bar{position:relative;transform-origin:bottom center;overflow:visible;animation:v3g-bar-grow .8s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:var(--v3g-stagger,0ms)}
+#app .activity-bar:before{content:"";position:absolute;left:2px;top:3px;bottom:4px;width:2px;border-radius:3px;background:rgba(255,255,255,.42);pointer-events:none}
+#app .activity-bar:after{content:"";position:absolute;left:0;right:0;top:-3px;height:7px;border-radius:50%;background:linear-gradient(90deg,rgba(255,255,255,.45),rgba(255,255,255,.04));pointer-events:none;opacity:.8}
+#app .activity-bar-group:hover .activity-bar{transform:translateY(-4px) rotateX(4deg);filter:brightness(1.06)}
+#app .activity-bar-group{position:relative}
+#app .activity-bar-group[title]:hover:after{content:attr(title);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:20;max-width:180px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--s);color:var(--t);font:600 10px 'DM Sans',sans-serif;white-space:nowrap;box-shadow:var(--shadow-1);pointer-events:none}
+#app .week-date{min-width:0;transition:transform 220ms ease,background 220ms ease}
+#app .week-date:hover{transform:translateY(-2px)}
+#app .week-date.today{border-radius:9px;background:linear-gradient(145deg,rgba(169,194,107,.16),rgba(107,142,58,.04));box-shadow:inset 0 1px rgba(255,255,255,.45),0 4px 10px rgba(60,90,30,.08)}
+#app .activity-card .panel-head h2,#app .calendar-board .calendar-title h2{overflow-wrap:anywhere}
+#app .hero-banner{isolation:isolate}
+#app .hero-banner .v3g-banner-particles{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:.3;background:radial-gradient(circle at 73% 28%,rgba(255,255,255,.38) 0 2px,transparent 3px),radial-gradient(circle at 82% 57%,rgba(255,255,255,.28) 0 1.5px,transparent 3px),radial-gradient(circle at 67% 70%,rgba(107,142,58,.45) 0 2px,transparent 4px),radial-gradient(circle at 91% 33%,rgba(201,163,92,.35) 0 2px,transparent 4px);background-size:150px 130px,180px 160px,220px 180px,200px 140px;animation:v3g-banner-dots 18s ease-in-out infinite alternate}
+#app .hero-banner .hero-botanical{z-index:1}
+#app .hero-banner .hero-copy{z-index:2}
+#app .metric-card .metric-tile:not(:hover),#app .panel-title-icon:not(:hover),#app .deadline-icon:not(:hover),#app .meeting-badge:not(:hover),#app .workspace-page-icon:not(:hover),#app .workspace-group-icon:not(:hover),#app .workspace-member-avatar:not(:hover),#app .group-owner-manage-icon:not(:hover),#app .when-choice-icon:not(:hover){transform:translateZ(12px)}
+#app .metric-card .metric-copy b,#app .sumcard .num{transform:translateZ(20px)}
+#app .hero-banner .hero-copy{transform:translateZ(12px);transform-style:preserve-3d}
+#app .hero-banner .hero-botanical{transform:translate3d(var(--v3g-hero-x,0px),var(--v3g-hero-y,0px),0);transition:transform 120ms linear}
+#app .hero-banner .hero-botanical span{transform:translateZ(14px) rotate(-20deg);transform-origin:center;animation:v3g-leaf-sway 7s ease-in-out infinite}
+#app .hero-banner .hero-wave{display:inline-block;transform-origin:70% 80%;animation:v3g-wave 2.6s ease-in-out infinite}
+#app .hero-banner:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,.22) 48%,transparent 57%);transform:translateX(-120%);animation:v3g-banner-sweep 8s ease-in-out infinite}
+#app .ai-promo{isolation:isolate;box-shadow:var(--shadow-1),inset 0 1px rgba(255,255,255,.24);transition:transform 250ms ease,box-shadow 250ms ease,border-color 250ms ease}
+#app .ai-promo:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.22;background:radial-gradient(ellipse at 15% 20%,rgba(169,194,107,.48),transparent 42%),radial-gradient(ellipse at 90% 90%,rgba(201,163,92,.25),transparent 45%);animation:v3g-ambient-drift 12s ease-in-out infinite alternate}
+#app .ai-promo.v3g-depth-ready:hover{transform:perspective(1000px) rotateX(var(--v3g-rx,0deg)) rotateY(var(--v3g-ry,0deg)) translateZ(var(--v3g-tz,0px)) translateY(-2px);box-shadow:var(--shadow-2),var(--glow)}
+#app .ai-orbit{transform:translate3d(var(--v3g-node-x,0px),var(--v3g-node-y,0px),0) rotate(20deg);animation:v3g-orbit-float 6s ease-in-out infinite}
+#app .when-choice{transform-style:preserve-3d;transition:transform 250ms ease,box-shadow 250ms ease,border-color 250ms ease}
+#app .when-choice:hover{transform:perspective(900px) rotateX(2deg) rotateY(-2deg) translateY(-2px);box-shadow:var(--shadow-2),var(--inner-light)}
+#app .when-choice.active{box-shadow:0 0 0 1px rgba(107,142,58,.25),0 8px 22px rgba(107,142,58,.14),inset 0 1px rgba(255,255,255,.8)}
+#app .when-choice[data-when-pick="flexible"].active{animation:none}
+#app .when-choice[data-when-pick="flexible"].active:after{content:"";position:absolute;inset:-1px;z-index:2;border:1px solid rgba(107,142,58,.52);border-radius:inherit;pointer-events:none;opacity:.35;animation:v3g-choice-outline 5s ease-in-out infinite}
+#app .when-choice.active .when-check{animation:v3g-check-pop 380ms cubic-bezier(.2,.8,.2,1) both}
+#app .field input,#app .field select,#app .field textarea,#app .chatinput,#app .workspace-modal-form input{
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.055),inset 0 1px rgba(255,255,255,.34);
+  transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease;
+}
+#app .field input:focus,#app .field select:focus,#app .field textarea:focus,#app .chatinput:focus,#app .workspace-modal-form input:focus{
+  transform:translateY(-2px);box-shadow:0 0 0 4px rgba(107,142,58,.18),0 7px 18px rgba(60,90,30,.09),inset 0 1px rgba(255,255,255,.35);border-color:rgba(107,142,58,.68)!important;
+}
+#app .btn.primary,#app .plus,#app .send,#app .completion-next,#app .quote-add-task,#app .project-action.primary{
+  position:relative;isolation:isolate;overflow:hidden;
+  box-shadow:0 4px 0 #2F4A1E,0 12px 24px rgba(47,74,30,.22),inset 0 1px 0 rgba(255,255,255,.36);
+  transition:transform 180ms cubic-bezier(.2,.8,.2,1),box-shadow 180ms ease,filter 180ms ease;
+}
+#app .v3g-button-sweep{position:absolute;top:-80%;bottom:-80%;left:-42%;width:24%;z-index:2;display:block;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);transform:translateX(-180%) rotate(22deg)}
+#app .btn.primary:hover,#app .plus:hover,#app .send:hover,#app .completion-next:hover,#app .quote-add-task:hover,#app .project-action.primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 #2F4A1E,0 17px 32px rgba(47,74,30,.30),inset 0 1px 0 rgba(255,255,255,.42);filter:brightness(1.03)}
+#app .btn.primary:hover .v3g-button-sweep,#app .plus:hover .v3g-button-sweep,#app .send:hover .v3g-button-sweep,#app .completion-next:hover .v3g-button-sweep,#app .quote-add-task:hover .v3g-button-sweep{animation:v3g-button-sweep 700ms ease-out both}
+#app .btn.primary:active,#app .plus:active,#app .send:active,#app .completion-next:active,#app .quote-add-task:active{transform:translateY(3px) scale(.985);box-shadow:0 1px 0 #2F4A1E,0 4px 10px rgba(47,74,30,.2),inset 0 2px 5px rgba(0,0,0,.14)}
+#app .btn:not(.primary),#app .tiny-more,#app .calendar-tools button,#app .calendar-title button,#app .subtle-link{
+  backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,.46);transition:transform 200ms ease,box-shadow 200ms ease,background 200ms ease;
+}
+#app .btn:not(.primary):hover,#app .tiny-more:hover,#app .calendar-tools button:hover,#app .calendar-title button:hover{transform:translateY(-2px);box-shadow:var(--shadow-1),inset 0 1px 0 rgba(255,255,255,.45)}
+#app #agentBtn.mic{
+  position:fixed!important;bottom:24px!important;right:24px!important;left:auto!important;top:auto!important;
+  z-index:50!important;width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
+  border-radius:19px!important;transform:none!important;pointer-events:auto!important;touch-action:manipulation;
+  isolation:isolate;overflow:visible;
+  background:conic-gradient(from 0deg,#A9C26B,#6B8E3A,#2F4A1E,#A9C26B)!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  box-shadow:0 10px 26px rgba(47,74,30,.32),inset 0 1px 0 rgba(255,255,255,.58)!important;
+  animation:v3g-orb-breathe 4s ease-in-out infinite;
+}
+#app #agentBtn.mic:before{
+  content:"";position:absolute;inset:4px;border-radius:14px;pointer-events:none;z-index:-1;
+  background:linear-gradient(135deg,rgba(255,255,255,.58),transparent 50%);
+  transform:rotate(0deg);animation:v3g-orb-highlight 5s linear infinite;
+}
+#app #agentBtn.mic:not(.listening):after{
+  content:"";position:absolute;inset:-6px;border-radius:24px;pointer-events:none;z-index:-2;
+  border:1px solid rgba(169,194,107,.55);box-shadow:0 0 18px rgba(107,142,58,.2);animation:v3g-orb-aura 3s ease-in-out infinite;
+}
+#app #agentBtn.mic:hover{transform:scale(1.08)!important;box-shadow:0 13px 32px rgba(47,74,30,.42),0 0 0 5px rgba(107,142,58,.12),inset 0 1px 0 rgba(255,255,255,.6)!important}
+#app #agentBtn.mic:focus-visible{outline:3px solid rgba(107,142,58,.8)!important;outline-offset:4px!important}
+#app #agentBtn.mic[aria-label]:hover:before{filter:brightness(1.1)}
+#app #agentBtn.mic[aria-label]:hover{--v3g-show-tip:1}
+#app .v3g-ai-tooltip{position:absolute;right:66px;bottom:8px;display:block;padding:7px 10px;border-radius:9px;background:var(--s);color:var(--t);border:1px solid var(--line);box-shadow:var(--shadow-1);font:700 10px 'DM Sans',sans-serif;white-space:nowrap;opacity:0;transform:translateX(5px);pointer-events:none;transition:opacity 180ms ease,transform 180ms ease}
+#app #agentBtn.mic:hover .v3g-ai-tooltip{opacity:1;transform:translateX(0)}
+#app .workspace-modal-backdrop.open .workspace-modal,
+#app .overlay.open .sheet{animation:v3g-modal-in 300ms cubic-bezier(.2,.8,.2,1) both}
+#app .focusoverlay.open .focusview{animation:v3g-screen-in 450ms cubic-bezier(.2,.8,.2,1) both}
+#app .workspace-menu:not([hidden]),#app .settings-menu:not([hidden]){transform-origin:top left;animation:v3g-dropdown-in 260ms cubic-bezier(.2,.8,.2,1) both}
+#app .screen.active{animation:v3g-screen-in 450ms cubic-bezier(.2,.8,.2,1) both}
+#workspaceDialog.open .workspace-modal,#notificationsDialog.open .workspace-modal,
+#habitManagerOverlay.open .sheet,#focusOverlay.open .focusview{animation:v3g-modal-in 300ms cubic-bezier(.2,.8,.2,1) both}
+#app .v3g-enter{animation:v3g-card-enter 500ms cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--v3g-stagger,0ms)}
+#app .v3g-enter.v3g-task-new{animation:v3g-task-drop 620ms cubic-bezier(.2,.8,.2,1) both}
+#app .v3g-pop{animation:v3g-check-pop 420ms cubic-bezier(.2,.8,.2,1) both}
+#app .theme-progress-ring.v3g-ring-flash,#app #dashboardRingPanel.v3g-ring-flash{animation:v3g-ring-enter 1s cubic-bezier(.2,.8,.2,1) both}
+.v3g-particle{position:fixed;z-index:10002;width:5px;height:5px;border-radius:50%;background:var(--v3g-particle-color,#6B8E3A);pointer-events:none;transform:translate(-50%,-50%);animation:v3g-particle-burst 650ms cubic-bezier(.2,.8,.2,1) both;box-shadow:0 0 7px rgba(107,142,58,.28)}
+#app .reward-spark{filter:drop-shadow(0 2px 4px rgba(107,142,58,.28))}
+#app.v3g-effects-paused *,#app.v3g-effects-paused *:before,#app.v3g-effects-paused *:after{animation-play-state:paused!important}
+@keyframes v3g-ambient-drift{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,1%,0) scale(1.04)}}
+@keyframes v3g-sidebar-shimmer{0%,100%{transform:translateY(-70%);opacity:.45}50%{transform:translateY(70%);opacity:1}}
+@keyframes v3g-reminder-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes v3g-banner-sweep{0%,72%,100%{transform:translateX(-120%)}86%{transform:translateX(120%)}}
+@keyframes v3g-banner-dots{0%{transform:translate3d(-6px,0,0);opacity:.18}100%{transform:translate3d(8px,-4px,0);opacity:.38}}
+@keyframes v3g-wave{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(16deg)}20%{transform:rotate(-10deg)}30%{transform:rotate(13deg)}40%{transform:rotate(-5deg)}50%{transform:rotate(0)}}
+@keyframes v3g-leaf-sway{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(-16deg)}}
+@keyframes v3g-orbit-float{0%,100%{transform:translate3d(var(--v3g-node-x,0px),var(--v3g-node-y,0px),0) rotate(20deg)}50%{transform:translate3d(var(--v3g-node-x,0px),calc(var(--v3g-node-y,0px) - 4px),0) rotate(26deg)}}
+@keyframes v3g-orb-highlight{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes v3g-orb-breathe{0%,100%{opacity:.96}50%{opacity:1}}
+@keyframes v3g-orb-aura{0%,100%{transform:scale(.96);opacity:.34}50%{transform:scale(1.08);opacity:.9}}
+@keyframes v3g-progress-shine{0%,70%,100%{transform:translateX(-115%)}85%{transform:translateX(115%)}}
+@keyframes v3g-ring-enter{0%{transform:scale(.94) rotate(-5deg);opacity:.45}70%{transform:scale(1.02) rotate(1deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes v3g-bar-grow{0%{transform:scaleY(.12);opacity:.45}100%{transform:scaleY(1);opacity:1}}
+@keyframes v3g-check-pop{0%{transform:scale(1)}45%{transform:scale(1.25)}75%{transform:scale(.96)}100%{transform:scale(1)}}
+@keyframes v3g-task-complete{0%{transform:translateX(0);opacity:1}55%{transform:translateX(5px);opacity:.8}100%{transform:translateX(0);opacity:.56}}
+@keyframes v3g-card-enter{0%{opacity:0;transform:perspective(1000px) translateY(24px) translateZ(-40px)}100%{opacity:1;transform:perspective(1000px) translateY(0) translateZ(0)}}
+@keyframes v3g-task-drop{0%{opacity:0;transform:perspective(1000px) translateY(-10px) translateZ(-60px) scale(.96)}60%{opacity:1;transform:perspective(1000px) translateY(2px) translateZ(6px) scale(1.01)}100%{opacity:1;transform:perspective(1000px) translateY(0) translateZ(0) scale(1)}}
+@keyframes v3g-screen-in{0%{opacity:0;transform:perspective(1000px) rotateX(4deg) translateY(16px) scale(.99)}100%{opacity:1;transform:perspective(1000px) rotateX(0) translateY(0) scale(1)}}
+@keyframes v3g-modal-in{0%{opacity:0;transform:perspective(1000px) scale(.92) rotateX(-8deg)}100%{opacity:1;transform:perspective(1000px) scale(1) rotateX(0)}}
+@keyframes v3g-dropdown-in{0%{opacity:0;transform:perspective(600px) scale(.92) rotateX(-8deg)}100%{opacity:1;transform:perspective(600px) scale(1) rotateX(0)}}
+@keyframes v3g-button-sweep{0%{transform:translateX(-180%) rotate(22deg)}100%{transform:translateX(520%) rotate(22deg)}}
+@keyframes v3g-particle-burst{0%{opacity:1;transform:translate(-50%,-50%) translate(0,0) scale(.45)}100%{opacity:0;transform:translate(-50%,-50%) translate(var(--v3g-particle-x,0px),var(--v3g-particle-y,0px)) scale(.05)}}
+@keyframes v3g-choice-outline{0%,100%{opacity:.28;transform:scale(1)}50%{opacity:.9;transform:scale(1.006)}}
+@media(max-width:768px){
+  #app .v3g-depth-ready{transform:none!important;transition:box-shadow 240ms ease,border-color 240ms ease}
+  #app .v3g-depth-ready:hover{transform:none!important}
+  #app .v3g-card-glare{display:none}
+  #app .v3g-ambient-layer{animation:none}
+  #app .v3g-cursor-spotlight{display:none}
+  #app .nav .v3g-sidebar-shimmer{display:none}
+  #app .nav:after{animation:none}
+  #app .hero-banner:before{animation:none}
+  #app .hero-banner .v3g-banner-particles{animation:none}
+  #app .hero-banner .hero-botanical{transform:none!important;transition:none}
+  #app .ai-orbit{animation:none}
+  #app .when-choice:hover{transform:translateY(-1px)}
+}
+@media(prefers-reduced-motion:reduce){
+  #app *,#app *:before,#app *:after,#workspaceDialog *,#notificationsDialog *,#habitManagerOverlay *,#focusOverlay *{animation:none!important;transition:opacity .12s ease!important;scroll-behavior:auto!important}
+  #app .hero-banner .v3g-banner-particles{animation:none}
+  #app .v3g-depth-ready,#app .v3g-depth-ready:hover{transform:none!important;will-change:auto!important}
+  #app .v3g-card-glare,#app .v3g-sidebar-shimmer,#app .v3g-ambient-layer,#app .v3g-cursor-spotlight{display:none!important}
+}
+
+/* Subtle workspace polish: keep the same components and interactions, reduce exaggerated depth and constant motion. */
+#app .v3g-depth-ready,
+#app .v3g-depth-ready:hover {
+  transform:none!important;
+  box-shadow:0 2px 6px rgba(18,28,14,.07),inset 0 1px 0 rgba(255,255,255,.28)!important;
+  transition:box-shadow 180ms ease,border-color 180ms ease,opacity 180ms ease!important;
+}
+#app .v3g-card-glare{opacity:.07!important}
+#app .v3g-ambient-layer{opacity:.13!important;animation:none!important}
+#app .v3g-cursor-spotlight{opacity:.22!important}
+#app .nav .v3g-sidebar-shimmer,
+#app .hero-banner .v3g-banner-particles,
+#app .hero-banner:before,
+#app .ai-promo:before{animation:none!important}
+#app .nav .v3g-sidebar-shimmer{opacity:.12!important}
+#app .hero-banner .v3g-banner-particles{opacity:.10!important}
+#app .hero-banner:before{opacity:.08!important}
+#app .ai-promo:before{opacity:.12!important}
+#app .metric-tile,
+#app .panel-title-icon,
+#app .deadline-icon,
+#app .meeting-badge,
+#app .workspace-page-icon,
+#app .workspace-group-icon,
+#app .workspace-detail-stats>div,
+#app .workspace-member-avatar,
+#app .group-owner-manage-icon,
+#app .when-choice-icon,
+#app .selected-task-state{transform:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 2px 6px rgba(18,28,14,.09)!important}
+#app .metric-card .metric-copy b,
+#app .sumcard .num,
+#app .panel-head h2,
+#app .calendar-title h2,
+#app .project-title-group h1,
+#app .workspace-page-info b,
+#app .workspace-group-info b{transform:none!important}
+#app .mini-task:hover{transform:translateY(-1px)!important;box-shadow:0 3px 8px rgba(18,28,14,.08)!important}
+#app .hero-banner .hero-botanical span{animation-duration:9s}
+@media(prefers-reduced-motion:reduce){
+  #app .v3g-cursor-spotlight{display:none!important}
+}
