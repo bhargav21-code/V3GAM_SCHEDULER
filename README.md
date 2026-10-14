@@ -1,5 +1,9 @@
 # V3GAM AI Task Scheduler — Premium UI
 
+**Live demo:** https://orbit-ai-task.hatchable.site
+
+V3GAM is an AI-powered task scheduler designed to turn tasks, deadlines, priorities, and available free time into a realistic daily plan. It supports task and deadline management, habit tracking, reminders, and collaborative workspaces, with an interface focused on clear, practical planning.
+
 [![Deploy to Hatchable](https://hatchable.com/deploy-button.svg)](https://hatchable.com/deploy?repo=https://github.com/bhargav21-code/V3GAM_SCHEDULER)
 
 A polished, phone-only AI task scheduler preview with the same interactive screens and a refined visual system.
