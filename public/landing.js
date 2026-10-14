@@ -39,7 +39,7 @@
             <h1>Your day,<br><span>actually planned.</span></h1>
             <p class="hero-subtext">V3GAM turns fuzzy intentions into a realistic schedule. It weighs deadlines, priorities and your real free time, then explains every decision. No more overloaded days.</p>
             <div class="hero-actions">
-              <a class="button button-primary" href="/login">Start planning free <span>${Icon('arrow')}</span></a>
+              <a class="button button-primary" href="/login?mode=signup">Start planning free <span>${Icon('arrow')}</span></a>
               <a class="button button-glass" href="#how-it-works"><span class="play-icon">${Icon('play')}</span> See how it works</a>
             </div>
             <div class="hero-note"><span class="note-check">${Icon('check')}</span> Free to start <i></i> No card required</div>
@@ -142,7 +142,7 @@
         <div class="cta-card content-width" data-reveal>
           <div class="cta-decoration" aria-hidden="true"><span></span><span></span><span></span></div>
           <div class="cta-content"><span class="section-kicker section-kicker-green">YOUR NEXT DAY STARTS HERE</span><h2>Ready to plan a day<br>that fits?</h2><p>Free to start. Your data stays yours.</p></div>
-          <div class="cta-actions"><a class="button button-primary" href="/login">Start planning free <span>${Icon('arrow')}</span></a><a class="button button-ghost" href="/login">Sign in</a></div>
+          <div class="cta-actions"><a class="button button-primary" href="/login?mode=signup">Start planning free <span>${Icon('arrow')}</span></a><a class="button button-ghost" href="/login">Sign in</a></div>
           <div class="cta-check" aria-hidden="true">${Icon('checkCircle')}</div>
         </div>
       </section>`;
