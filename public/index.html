@@ -12,7 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/landing.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://cbrbyhmaeeliumibauvx.supabase.co wss://cbrbyhmaeeliumibauvx.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
   <script src="/landing.js" defer></script>
 </head>
 <body>
@@ -29,7 +31,7 @@
         <a href="#features">Features</a>
         <a href="#how-it-works">How it works</a>
         <a class="nav-signin" href="/login">Sign in</a>
-        <a class="button button-primary nav-cta" href="/login">Start free <span aria-hidden="true">→</span></a>
+        <a class="button button-primary nav-cta" href="/login?mode=signup">Start free <span aria-hidden="true">→</span></a>
       </div>
     </nav>
   </header>
