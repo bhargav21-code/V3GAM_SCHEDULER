@@ -1,5 +1,6 @@
 import { db } from 'hatchable';
 import { requireSupabaseUser } from '../lib/supabase.js';
+import { setApiSecurityHeaders } from '../lib/security.js';
 
 export const access = 'public';
 export const methods = ['GET'];
@@ -7,6 +8,7 @@ export const methods = ['GET'];
 function json(res,status,body){return res.status(status).json(body);}
 
 export default async function(req,res){
+ setApiSecurityHeaders(req,res);
   const userId=await requireSupabaseUser(req,res);
   if(!userId)return;
   if(req.method!=='GET')return json(res,405,{error:'Method not allowed.'});

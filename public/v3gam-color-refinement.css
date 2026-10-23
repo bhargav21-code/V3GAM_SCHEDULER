@@ -1,0 +1,316 @@
+/* V3GAM color refinement — color, gradient and shadow overrides only. Scoped to signed-in app. */
+#app{
+  --shadow-1:0 2px 4px rgba(40,60,25,.06),0 8px 16px rgba(40,60,25,.08),0 24px 48px rgba(40,60,25,.10);
+  --shadow-2:0 4px 8px rgba(40,60,25,.08),0 16px 32px rgba(40,60,25,.14),0 40px 80px rgba(40,60,25,.18);
+  --inner-light:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.04);
+  --glow:0 0 0 1px rgba(107,142,58,.25),0 10px 40px rgba(123,163,63,.35);
+  --bg:#EEF1E4;--s:#FFFFFF;--s2:#F6F8EF;--s3:#E6ECD7;
+  --t:#18240F;--m:#6F7568;--sub:#6F7568;--a:#5E8B2F;--green:#5E8B2F;--gold:#F2B544;
+  background-color:var(--bg)!important;
+  color:var(--t);
+}
+#app:not(.light){
+  --shadow-1:0 3px 8px rgba(0,0,0,.28),0 14px 28px rgba(0,0,0,.24),0 30px 60px rgba(0,0,0,.18);
+  --shadow-2:0 5px 12px rgba(0,0,0,.34),0 20px 42px rgba(0,0,0,.29),0 44px 90px rgba(0,0,0,.23);
+  --inner-light:inset 0 1px 0 rgba(184,215,122,.12),inset 0 -1px 0 rgba(0,0,0,.35);
+  --glow:0 0 0 1px rgba(184,215,122,.16),0 10px 40px rgba(123,163,63,.18);
+  --bg:#0F1709;--s:#1A2512;--s2:#17210F;--s3:#26351A;
+  --t:#EAF2DA;--m:#9DAB88;--sub:#9DAB88;--a:#B8D77A;--green:#B8D77A;--gold:#F2B544;
+  background-color:#0F1709!important;color:#EAF2DA;
+}
+/* Primary surfaces use the new card gradient without changing sizing or layout. */
+#app .metric-card,
+#app .sumcard,
+#app .soft-card,
+#app .activity-card,
+#app .progress-card,
+#app .deadlines-card,
+#app .meetings-card,
+#app .quote-card,
+#app .calendar-board,
+#app .chartcard,
+#app .score,
+#app .streak,
+#app .monthcard,
+#app .insight,
+#app .formcard,
+#app .habit-overview-card,
+#app .weekly-habit-breakdown,
+#app .selected-day-card,
+#app .habit-tracker-card,
+#app .habit-chart-card,
+#app .workspace-page-card,
+#app .workspace-group-card,
+#app .workspace-detail-head,
+#app .workspace-detail-stats>div,
+#app .workspace-modal,
+#app .notification-row,
+#app .group-owner-manage-card{
+  background:var(--grad-card,#FCFDF8)!important;
+  border-color:var(--line)!important;
+  box-shadow:var(--shadow-1),var(--inner-light)!important;
+}
+#app .workspace-bar{
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(246,248,239,.96))!important;
+  border-color:rgba(47,74,30,.13)!important;
+  box-shadow:0 4px 18px rgba(47,74,30,.08),inset 0 1px rgba(255,255,255,.9)!important;
+}
+#app:not(.light) .workspace-bar{
+  background:linear-gradient(145deg,rgba(26,37,18,.97),rgba(20,29,14,.97))!important;
+  border-color:var(--rim-dark)!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.25),inset 0 1px rgba(184,215,122,.08)!important;
+}
+#app .nav{background:var(--grad-sidebar)!important}
+#app:not(.light) .nav{background:var(--grad-sidebar)!important}
+#app .hero-banner{background:var(--grad-hero)!important;border-color:rgba(47,74,30,.14)!important;color:#18240F!important;box-shadow:var(--shadow-1),var(--inner-light)!important}
+#app .hero-banner .eyebrow2{color:#33491F!important}
+#app .hero-banner .greeting,#app .hero-banner .greeting-subtext{color:#18240F!important}
+#app:not(.light) .hero-banner{background:var(--grad-hero)!important;color:#18240F!important}
+#app:not(.light) .hero-banner .eyebrow2,#app:not(.light) .hero-banner .greeting,#app:not(.light) .hero-banner .greeting-subtext{color:#18240F!important}
+/* Glossy icon surfaces and non-primary glass buttons inherit the refined sage/olive palette. */
+#app .metric-tile,
+#app .icon,
+#app .close,
+#app .tiny-more,
+#app .panel-title-icon,
+#app .notification-row-icon,
+#app .deadline-icon,
+#app .meeting-icon,
+#app .workspace-page-icon,
+#app .workspace-group-icon,
+#app .workspace-member-avatar,
+#app .group-owner-manage-icon,
+#app .when-choice-icon,
+#app .focusicon{
+  background:var(--grad-sage)!important;
+  border-color:rgba(94,139,47,.24)!important;
+  color:#2F4A1E!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -3px 7px rgba(47,74,30,.10),0 8px 18px rgba(47,74,30,.16)!important;
+}
+#app:not(.light) .metric-tile,
+#app:not(.light) .icon,
+#app:not(.light) .close,
+#app:not(.light) .tiny-more,
+#app:not(.light) .panel-title-icon,
+#app:not(.light) .notification-row-icon,
+#app:not(.light) .deadline-icon,
+#app:not(.light) .meeting-icon,
+#app:not(.light) .workspace-page-icon,
+#app:not(.light) .workspace-group-icon,
+#app:not(.light) .workspace-member-avatar,
+#app:not(.light) .group-owner-manage-icon,
+#app:not(.light) .when-choice-icon,
+#app:not(.light) .focusicon{
+  background:linear-gradient(145deg,#536D30,#354A20)!important;
+  border-color:var(--rim-dark)!important;color:#EAF2DA!important;
+  box-shadow:inset 0 1px 0 rgba(184,215,122,.16),inset 0 -3px 7px rgba(0,0,0,.23),0 8px 18px rgba(0,0,0,.24)!important;
+}
+#app .btn.primary,
+#app .plus,
+#app .send,
+#app .completion-next,
+#app .quote-add-task,
+#app .project-action.primary{
+  background:linear-gradient(145deg,#4F7A2E,#3D5A27 55%,#2F4A1E)!important;
+  border-color:rgba(47,74,30,.26)!important;color:#FFFFFF!important;
+  box-shadow:0 4px 0 #243A15,0 12px 24px rgba(47,74,30,.25),inset 0 1px 0 rgba(255,255,255,.3)!important;
+}
+#app .btn.primary:hover,
+#app .plus:hover,
+#app .send:hover,
+#app .completion-next:hover,
+#app .quote-add-task:hover,
+#app .project-action.primary:hover{
+  box-shadow:0 4px 0 #243A15,0 16px 30px rgba(47,74,30,.34),0 0 22px rgba(123,163,63,.22),inset 0 1px 0 rgba(255,255,255,.36)!important;
+}
+#app .btn:not(.primary),
+#app .tiny-more,
+#app .calendar-tools button,
+#app .calendar-title button,
+#app .subtle-link{
+  border-color:var(--line)!important;
+  background:rgba(255,255,255,.62);
+  color:#2F4A1E;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 7px rgba(47,74,30,.05);
+}
+#app:not(.light) .btn:not(.primary),
+#app:not(.light) .tiny-more,
+#app:not(.light) .calendar-tools button,
+#app:not(.light) .calendar-title button,
+#app:not(.light) .subtle-link{
+  border-color:var(--rim-dark)!important;background:rgba(184,215,122,.055)!important;color:#DCE9C3!important;
+  box-shadow:inset 0 1px 0 rgba(184,215,122,.1),0 2px 7px rgba(0,0,0,.16);
+}
+/* Requested category colors; foregrounds for small text are darkened slightly where needed for WCAG AA. */
+#app .study,#app .lecture,#app .mini-task.study,#app .mini-task.lecture,#app .task.study,#app .task.lecture,#app .block.study,#app .block.blue{
+  --task-accent:#3B63B8;--c:#3B63B8;
+  background:#DCE8FB!important;border-color:#BDD1F2!important;color:#3B63B8!important;
+}
+#app .wellness,#app .gym,#app .mini-task.gym,#app .task.gym,#app .block.green{
+  --task-accent:#4A7A1E;--c:#4A7A1E;
+  background:#DDF0C4!important;border-color:#C6DFA6!important;color:#426F1B!important;
+}
+#app .projects,#app .project,#app .lab,#app .mini-task.lab,#app .task.lab,#app .block.pink{
+  --task-accent:#C77A1F;--c:#C77A1F;
+  background:#FBE3C4!important;border-color:#F0CF9F!important;color:#8A4D0A!important;
+}
+#app .health{
+  --task-accent:#7A4FC0;--c:#7A4FC0;
+  background:#E9DDF8!important;border-color:#D4C2EF!important;color:#6F3CAD!important;
+}
+#app .meal,#app .mini-task.meal,#app .task.meal,#app .block.gold{
+  --task-accent:#C77A1F;--c:#C77A1F;
+  background:#FBE3C4!important;border-color:#F0CF9F!important;color:#8A4D0A!important;
+}
+/* Day cards, Plan selector and heatmap cells: sage, olive and amber instead of purple fills. */
+#app #screen-plan .day,
+#app #screen-plan .week-habit-day,
+#app #screen-plan .monthcard,
+#app #screen-plan .heat,
+#app #screen-plan .habit-overview-card,
+#app #screen-plan .weekly-habit-breakdown,
+#app #screen-plan .selected-day-card,
+#app #screen-plan .habit-tracker-card,
+#app #screen-plan .habit-chart-card{
+  background:var(--grad-card)!important;
+  border-color:rgba(94,139,47,.17)!important;
+  box-shadow:var(--shadow-1),var(--inner-light)!important;
+  color:#18240F;
+}
+#app .day.today,
+#app .heat.selected,
+#app .heat.today,
+#app .week-habit-day.today,
+#app .week-habit-day.selected{
+  background:var(--grad-sage)!important;
+  border-color:#8FB14F!important;
+  color:#243A15!important;
+  box-shadow:0 0 0 1px rgba(94,139,47,.16),0 8px 18px rgba(47,74,30,.12),inset 0 1px rgba(255,255,255,.8)!important;
+}
+#app .heat.l1{background:#EEF3E2!important;color:#3D5A27!important;border-color:#DCE7C8!important}
+#app .heat.l2{background:#DCE8C1!important;color:#2F4A1E!important;border-color:#CADBA6!important}
+#app .heat.l3{background:#B8D77A!important;color:#243A15!important;border-color:#9FBE5F!important}
+#app .heat.l4{background:linear-gradient(145deg,#7BA33F,#5E8B2F 55%,#2F4A1E)!important;color:#FFFFFF!important;border-color:#5E8B2F!important}
+#app .week-habit-bar{background:#E0E8D0!important}
+#app .week-habit-bar span{background:var(--grad-sage)!important}
+#app:not(.light) #screen-plan .day,
+#app:not(.light) #screen-plan .week-habit-day,
+#app:not(.light) #screen-plan .monthcard,
+#app:not(.light) #screen-plan .heat,
+#app:not(.light) #screen-plan .habit-overview-card,
+#app:not(.light) #screen-plan .weekly-habit-breakdown,
+#app:not(.light) #screen-plan .selected-day-card,
+#app:not(.light) #screen-plan .habit-tracker-card,
+#app:not(.light) #screen-plan .habit-chart-card{
+  background:var(--grad-card)!important;border-color:var(--rim-dark)!important;color:#EAF2DA!important;
+  box-shadow:var(--shadow-1),var(--inner-light)!important;
+}
+#app:not(.light) .day.today,
+#app:not(.light) .heat.selected,
+#app:not(.light) .heat.today,
+#app:not(.light) .week-habit-day.today,
+#app:not(.light) .week-habit-day.selected{
+  background:linear-gradient(145deg,#536D30,#354A20)!important;border-color:rgba(184,215,122,.42)!important;color:#F1F7E4!important;
+}
+#app:not(.light) .heat.l1{background:#26351A!important;color:#C5D9A2!important;border-color:#354827!important}
+#app:not(.light) .heat.l2{background:#344A22!important;color:#D9E9B8!important;border-color:#4A6330!important}
+#app:not(.light) .heat.l3{background:#5E7C33!important;color:#FFFFFF!important;border-color:#789A43!important}
+#app:not(.light) .heat.l4{background:linear-gradient(145deg,#7BA33F,#5E8B2F 55%,#2F4A1E)!important;color:#FFFFFF!important;border-color:#94B55A!important}
+#app:not(.light) .week-habit-bar{background:#26351A!important}
+#app:not(.light) .week-habit-bar span{background:var(--grad-sage)!important}
+/* Recolor legacy Plan heatmaps and task category accents without changing their behavior. */
+#app .block,
+#app .heat.l1,#app .heat.l2,#app .heat.l3,#app .heat.l4{
+  box-shadow:inset 0 1px rgba(255,255,255,.58),0 2px 5px rgba(47,74,30,.06);
+}
+#app .seg button.active,
+#app .nav button.active{
+  background:linear-gradient(145deg,#E8F1D7,#D7E7B4)!important;border-color:#BDD198!important;color:#2F4A1E!important;
+}
+#app:not(.light) .seg button.active,
+#app:not(.light) .nav button.active{
+  background:linear-gradient(145deg,#3C5427,#2B3D1D)!important;border-color:var(--rim-dark)!important;color:#EAF2DA!important;
+}
+#app .metric-ring,
+#app #dashboardRing,
+#app #dashboardRingPanel,
+#app .progress-ring{
+  filter:drop-shadow(0 5px 10px rgba(47,74,30,.12));
+}
+#app .metric-ring:after{background:#FFFFFF!important}
+#app:not(.light) .metric-ring:after{background:#1A2512!important}
+#app .track,#app .activity-track,#app .habit-progress-track,#app .deadline-progress,#app .completion-track{background:#E2EAD4!important;box-shadow:inset 0 2px 4px rgba(47,74,30,.12)}
+#app .track span,#app .activity-track span,#app .habit-progress-track i,#app .deadline-progress span,#app .completion-track span{background:var(--grad-sage)!important}
+#app:not(.light) .track,#app:not(.light) .activity-track,#app:not(.light) .habit-progress-track,#app:not(.light) .deadline-progress,#app:not(.light) .completion-track{background:#26351A!important;box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+#app:not(.light) .track span,#app:not(.light) .activity-track span,#app:not(.light) .habit-progress-track i,#app:not(.light) .deadline-progress span,#app:not(.light) .completion-track span{background:linear-gradient(145deg,#B8D77A,#7BA33F)!important}
+#app .activity-bar,#app .bar{background:linear-gradient(180deg,#D4F28A 0%,#8FB14F 42%,#5E8B2F 100%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 5px 12px rgba(47,74,30,.16)!important}
+#app .activity-bar.gold,#app .bar.actual{background:linear-gradient(180deg,#FFD98A 0%,#F2B544 60%,#BE8123 100%)!important}
+#app .activity-bar:before{background:rgba(255,255,255,.55)!important}
+#app .activity-bar:after{background:linear-gradient(90deg,rgba(255,255,255,.62),rgba(255,255,255,.08))!important}
+/* Assistant orb: remove purple/blue hues, preserve its existing geometry and click behavior. */
+#app #agentBtn.mic{
+  background:conic-gradient(from 0deg,#D4F28A,#B8D77A,#5E8B2F,#2F4A1E,#F2B544,#D4F28A)!important;
+  box-shadow:0 10px 26px rgba(47,74,30,.32),0 0 22px rgba(123,163,63,.20),inset 0 1px 0 rgba(255,255,255,.58)!important;
+  border-color:rgba(184,215,122,.48)!important;
+}
+#app #agentBtn.mic:before{background:linear-gradient(135deg,rgba(255,255,255,.62),rgba(212,242,138,.08) 50%,transparent)!important}
+#app #agentBtn.mic:not(.listening):after{border-color:rgba(212,242,138,.65)!important;box-shadow:0 0 18px rgba(212,242,138,.3)!important}
+#app #agentBtn.mic.listening{background:var(--grad-olive)!important;box-shadow:0 0 0 4px rgba(123,163,63,.18),0 10px 26px rgba(47,74,30,.35)!important}
+#app .ai-orbit{color:rgba(212,242,138,.36)!important;text-shadow:0 0 24px rgba(123,163,63,.22)!important}
+#app .ai-promo{background:radial-gradient(ellipse at 95% 45%,rgba(123,163,63,.26),transparent 48%),linear-gradient(115deg,#EFF5DE,#DCE9BB 70%,#C7DDA0)!important;color:#18240F!important;border-color:rgba(94,139,47,.24)!important}
+#app .ai-promo-copy small{color:#344A22!important}
+#app .ai-promo-copy em{background:var(--grad-olive)!important;color:#FFFFFF!important;border-color:rgba(47,74,30,.22)!important;box-shadow:0 3px 9px rgba(47,74,30,.2)!important}
+#app:not(.light) .ai-promo{background:radial-gradient(ellipse at 95% 45%,rgba(123,163,63,.28),transparent 48%),linear-gradient(115deg,#26391A,#1A2512 70%,#141D0E)!important;color:#EAF2DA!important;border-color:var(--rim-dark)!important}
+#app:not(.light) .ai-promo-copy small{color:#C5D9A2!important}
+#app .quote-card{background:var(--grad-card)!important}
+#app:not(.light) .quote-card{background:var(--grad-card)!important}
+#app .quote-copy b,#app .quote-copy p{color:var(--t)!important}
+#app .panel-head h2,#app .calendar-title h2,#app .project-title-group h1,#app .workspace-page-info b,#app .workspace-group-info b{color:var(--t)!important}
+#app .muted,#app .panel-head-label span,#app .monthtop span,#app .cardsub{color:var(--m)!important}
+#app input,#app select,#app textarea{border-color:var(--line)}
+#app .field input:focus,#app .field select:focus,#app .field textarea:focus,#app .chatinput:focus{box-shadow:0 0 0 4px rgba(123,163,63,.18),0 7px 18px rgba(47,74,30,.09),inset 0 1px rgba(255,255,255,.35)!important;border-color:rgba(94,139,47,.68)!important}
+#app:not(.light) .field input:focus,#app:not(.light) .field select:focus,#app:not(.light) .field textarea:focus,#app:not(.light) .chatinput:focus{box-shadow:0 0 0 4px rgba(184,215,122,.14),0 7px 18px rgba(0,0,0,.2),inset 0 1px rgba(184,215,122,.08)!important;border-color:rgba(184,215,122,.48)!important}
+#app .focus-visible,#app :focus-visible{outline-color:#5E8B2F}
+#app:not(.light) :focus-visible{outline-color:#B8D77A}
+/* Dark-mode typography and surfaces stay high contrast. */
+#app:not(.light) .metric-card,
+#app:not(.light) .sumcard,
+#app:not(.light) .soft-card,
+#app:not(.light) .activity-card,
+#app:not(.light) .progress-card,
+#app:not(.light) .deadlines-card,
+#app:not(.light) .meetings-card,
+#app:not(.light) .quote-card,
+#app:not(.light) .calendar-board,
+#app:not(.light) .chartcard,
+#app:not(.light) .score,
+#app:not(.light) .streak,
+#app:not(.light) .monthcard,
+#app:not(.light) .insight,
+#app:not(.light) .formcard,
+#app:not(.light) .habit-overview-card,
+#app:not(.light) .weekly-habit-breakdown,
+#app:not(.light) .selected-day-card,
+#app:not(.light) .habit-tracker-card,
+#app:not(.light) .habit-chart-card,
+#app:not(.light) .workspace-page-card,
+#app:not(.light) .workspace-group-card,
+#app:not(.light) .workspace-detail-head,
+#app:not(.light) .workspace-detail-stats>div,
+#app:not(.light) .workspace-modal,
+#app:not(.light) .notification-row,
+#app:not(.light) .group-owner-manage-card{
+  background:var(--grad-card-dark)!important;border-color:var(--rim-dark)!important;color:#EAF2DA!important;
+}
+#app:not(.light) .metric-copy b,
+#app:not(.light) .metric-copy small,
+#app:not(.light) .metric-copy em,
+#app:not(.light) .workspace-page-info p,
+#app:not(.light) .workspace-group-info p,
+#app:not(.light) .workspace-page-info span,
+#app:not(.light) .workspace-group-info span,
+#app:not(.light) .panel-head-label span,
+#app:not(.light) .muted,
+#app:not(.light) .monthtop span,
+#app:not(.light) .cardsub{color:#9DAB88!important}
+/* Color-only pass: motion rules remain owned by the existing depth-effects stylesheet. */

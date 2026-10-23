@@ -1,0 +1,82 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+const BASE=(process.env.V3GAM_BASE_URL||'').replace(/\/+$/,'');
+const SUPABASE_URL=(process.env.SUPABASE_URL||'').replace(/\/+$/,'');
+const ANON_KEY=process.env.SUPABASE_ANON_KEY||'';
+const credentials={
+  owner:{email:process.env.V3GAM_OWNER_EMAIL||'',password:process.env.V3GAM_OWNER_PASSWORD||''},
+  member:{email:process.env.V3GAM_MEMBER_EMAIL||'',password:process.env.V3GAM_MEMBER_PASSWORD||''},
+  outsider:{email:process.env.V3GAM_OUTSIDER_EMAIL||'',password:process.env.V3GAM_OUTSIDER_PASSWORD||''}
+};
+const ready=!!(BASE&&SUPABASE_URL&&ANON_KEY&&Object.values(credentials).every(c=>c.email&&c.password));
+
+async function login(c){
+  const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+    method:'POST',headers:{apikey:ANON_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(c)
+  });
+  const data=await r.json().catch(()=>({}));
+  assert.equal(r.status,200,'test account login failed: HTTP '+r.status);
+  return {token:data.access_token,id:data.user?.id};
+}
+async function api(path,{token,method='GET',body}={}){
+  const headers={Accept:'application/json'};
+  if(token)headers.Authorization='Bearer '+token;
+  if(body!==undefined)headers['Content-Type']='application/json';
+  const r=await fetch(BASE+path,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)})});
+  const raw=await r.text();let json={};try{json=JSON.parse(raw)}catch{}
+  return {status:r.status,json,raw};
+}
+function expect(r,status,message){assert.equal(r.status,status,message+'; got '+r.status+' '+JSON.stringify(r.json).slice(0,250));return r;}
+
+test('shared task authorization: owner, member, outsider, assistant, revocation and owner-only actions',
+{skip:!ready?'Set V3GAM_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY and three disposable verified test accounts':''},
+async()=>{
+  const owner=await login(credentials.owner),member=await login(credentials.member),outsider=await login(credentials.outsider);
+  let workspaceId=null,ownerTaskId=null,memberTaskId=null,memberJoined=false;
+  const suffix=Date.now();
+  try{
+    const created=expect(await api('/api/workspaces',{token:owner.token,method:'POST',body:{action:'create',name:'SECURITY TEST '+suffix}}),201,'owner creates test group');
+    workspaceId=created.json.workspace.id;
+    const invite=created.json.workspace.invite_code;
+    assert.match(invite,/^[A-F0-9]{20}$/i,'owner invite code missing');
+    expect(await api('/api/workspaces',{token:member.token,method:'POST',body:{action:'join',invite_code:invite}}),200,'member joins');
+    memberJoined=true;
+
+    ownerTaskId=expect(await api('/api/tasks',{token:owner.token,method:'POST',body:{workspace_id:workspaceId,title:'OWNER TASK '+suffix,duration_minutes:15}}),201,'owner creates task').json.task.id;
+    memberTaskId=expect(await api('/api/tasks',{token:member.token,method:'POST',body:{workspace_id:workspaceId,title:'MEMBER TASK '+suffix,duration_minutes:15}}),201,'member creates task').json.task.id;
+
+    expect(await api('/api/tasks?id='+ownerTaskId+'&workspace_id='+workspaceId,{token:member.token,method:'PATCH',body:{title:'UNAUTHORIZED '+suffix}}),403,'member cannot edit owner task');
+    expect(await api('/api/tasks?id='+ownerTaskId+'&workspace_id='+workspaceId,{token:member.token,method:'DELETE'}),403,'member cannot delete owner task');
+
+    // Owner may manage a task created by a different group member.
+    expect(await api('/api/tasks?id='+memberTaskId+'&workspace_id='+workspaceId,{token:owner.token,method:'PATCH',body:{title:'OWNER EDIT '+suffix}}),200,'owner can edit member task');
+    expect(await api('/api/tasks?id='+memberTaskId+'&workspace_id='+workspaceId,{token:owner.token,method:'DELETE'}),200,'owner can delete member task');
+
+    // The model is not trusted as an authorization source: a concrete reschedule
+    // request targeting the owner's remaining task must be denied server-side.
+    const assistant=await api('/api/assistant',{token:member.token,method:'POST',body:{
+      workspace_id:workspaceId,timezone:'Asia/Kolkata',
+      message:'Reschedule the task named "OWNER TASK '+suffix+'" to tomorrow at 7:30 PM.'
+    }});
+    assert.ok(assistant.status===403 || (assistant.status===200&&assistant.json?.action==='clarify'),
+      'assistant must deny or ask clarification rather than mutate another member task; got '+assistant.status+' '+JSON.stringify(assistant.json).slice(0,300));
+    if(assistant.status===200)assert.equal(assistant.json.action,'clarify','assistant must not silently execute a forbidden mutation');
+
+    expect(await api('/api/tasks?workspace_id='+workspaceId,{token:outsider.token}),403,'outsider cannot list group tasks');
+    expect(await api('/api/tasks?id='+ownerTaskId+'&workspace_id='+workspaceId,{token:outsider.token,method:'PATCH',body:{title:'OUTSIDER '+suffix}}),403,'outsider cannot edit group task');
+    expect(await api('/api/workspaces',{token:member.token,method:'POST',body:{action:'rotate_invite',workspace_id:workspaceId}}),403,'member cannot rotate invite code');
+    expect(await api('/api/workspaces?workspace_id='+workspaceId+'&user_id='+encodeURIComponent(owner.id),{token:member.token,method:'DELETE'}),403,'member cannot remove owner');
+
+    expect(await api('/api/workspaces?workspace_id='+workspaceId+'&user_id='+encodeURIComponent(member.id),{token:owner.token,method:'DELETE'}),200,'owner removes member');
+    memberJoined=false;
+    expect(await api('/api/tasks?workspace_id='+workspaceId,{token:member.token}),403,'removed member immediately loses task access');
+    expect(await api('/api/tasks?id='+ownerTaskId+'&workspace_id='+workspaceId,{token:member.token,method:'PATCH',body:{title:'AFTER REVOCATION'}}),403,'removed member cannot mutate tasks');
+  }finally{
+    if(workspaceId){
+      if(memberJoined)await api('/api/workspaces?workspace_id='+workspaceId+'&user_id='+encodeURIComponent(member.id),{token:owner.token,method:'DELETE'}).catch(()=>{});
+      await api('/api/workspaces?workspace_id='+workspaceId,{token:owner.token,method:'DELETE'}).catch(()=>{});
+    }
+  }
+});

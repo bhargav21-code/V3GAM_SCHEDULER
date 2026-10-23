@@ -1,5 +1,6 @@
 import { db } from 'hatchable';
-import { requireSupabaseUser } from '../lib/supabase.js';
+import { requireSupabaseIdentity } from '../lib/supabase.js';
+import { checkRateLimit, respondRateLimited, setApiSecurityHeaders, enforceWriteLimit } from '../lib/security.js';
 import { randomBytes } from 'node:crypto';
 
 export const access = 'public';
@@ -8,8 +9,11 @@ export const methods = ['GET', 'POST', 'DELETE'];
 function json(res, status, body) { return res.status(status).json(body); }
 
 export default async function (req, res) {
-  const userId = await requireSupabaseUser(req, res);
-  if (!userId) return;
+  setApiSecurityHeaders(req,res);
+  const identity = await requireSupabaseIdentity(req, res);
+  if (!identity) return;
+  const userId = identity.id;
+  const verifiedEmail = identity.email;
 
   if (req.method === 'GET') {
     const workspaceId = req.query?.workspace_id ? Number(req.query.workspace_id) : null;
@@ -30,17 +34,23 @@ export default async function (req, res) {
   }
 
   if (req.method === 'DELETE') {
+    if (!await enforceWriteLimit(res, userId, 'workspace-delete-minute', 30, 60)) return;
     const workspaceId=Number(req.query?.workspace_id);
     if(!Number.isSafeInteger(workspaceId)||workspaceId<1)return json(res,400,{error:'A valid workspace is required.'});
     const {rows:ws}=await db.query('SELECT owner_id FROM orbit_workspaces WHERE id=$1',[workspaceId]);
     if(!ws.length)return json(res,404,{error:'Workspace not found.'});
     const targetUserId=String(req.query?.user_id||'').trim();
 
-    // Without a target user, a member is asking to leave this workspace themselves.
+    // Owners may delete their group; ordinary members may only leave it.
     if(!targetUserId){
-      if(ws[0].owner_id===userId)return json(res,400,{error:'Workspace owners cannot exit their own group. Transfer ownership or delete the workspace instead.'});
+      if(ws[0].owner_id===userId){
+        const deleted=await db.query('DELETE FROM orbit_workspaces WHERE id=$1 AND owner_id=$2 RETURNING id',[workspaceId,userId]);
+        return deleted.rowCount
+          ? json(res,200,{ok:true,deleted_workspace_id:workspaceId})
+          : json(res,404,{error:'Workspace not found.'});
+      }
       const result=await db.query(
-        "WITH moved AS (UPDATE orbit_tasks SET workspace_id=NULL,updated_at=now() WHERE workspace_id=$1 AND user_id=$2 RETURNING id), removed AS (DELETE FROM orbit_workspace_members WHERE workspace_id=$1 AND user_id=$2 AND role='member' RETURNING user_id) SELECT (SELECT COUNT(*)::int FROM removed) AS removed_count,(SELECT COUNT(*)::int FROM moved) AS tasks_moved",
+        "WITH removed AS (DELETE FROM orbit_workspace_members WHERE workspace_id=$1 AND user_id=$2 AND role='member' RETURNING user_id), moved AS (UPDATE orbit_tasks SET workspace_id=NULL,updated_at=now() WHERE workspace_id=$1 AND user_id=$2 AND EXISTS (SELECT 1 FROM removed) RETURNING id) SELECT (SELECT COUNT(*)::int FROM removed) AS removed_count,(SELECT COUNT(*)::int FROM moved) AS tasks_moved",
         [workspaceId,userId]
       );
       if(!Number(result.rows[0]?.removed_count))return json(res,404,{error:'You are not a member of this workspace.'});
@@ -58,6 +68,7 @@ export default async function (req, res) {
   const body = req.body || {};
   const action = body.action;
   if (action === 'rotate_invite') {
+    if (!await enforceWriteLimit(res, userId, 'workspace-rotate-hour', 20, 3600)) return;
     const workspaceId=Number(body.workspace_id);
     if(!Number.isSafeInteger(workspaceId)||workspaceId<1)return json(res,400,{error:'A valid workspace is required.'});
     const {rows:existing}=await db.query('SELECT owner_id FROM orbit_workspaces WHERE id=$1',[workspaceId]);
@@ -68,10 +79,11 @@ export default async function (req, res) {
     return json(res,200,{workspace:rows[0]});
   }
   if (action === 'create') {
+    if (!await enforceWriteLimit(res, userId, 'workspace-create-hour', 10, 3600)) return;
     const name = typeof body.name === 'string' ? body.name.trim().slice(0, 80) : '';
     if (name.length < 2) return json(res, 400, { error: 'Workspace name must be at least 2 characters.' });
     const inviteCode = randomBytes(10).toString('hex').toUpperCase();
-    const email=typeof body.email==='string'?body.email.trim().slice(0,254):'';
+    const email=verifiedEmail;
     const { rows } = await db.query(
       "WITH w AS (INSERT INTO orbit_workspaces(name,owner_id,invite_code) VALUES($1,$2,$3) RETURNING id,name,owner_id,invite_code,created_at), m AS (INSERT INTO orbit_workspace_members(workspace_id,user_id,role,email) SELECT id,$2,'owner',$4 FROM w RETURNING workspace_id) SELECT w.* FROM w JOIN m ON m.workspace_id=w.id",
       [name, userId, inviteCode, email]
@@ -80,15 +92,29 @@ export default async function (req, res) {
   }
 
   if (action === 'join') {
+    // Rate-limit before validating the code so malformed guesses count too.
+    try {
+      for (const [bucket, limit, seconds] of [
+        ['workspace-join-minute', 5, 60],
+        ['workspace-join-hour', 20, 3600]
+      ]) {
+        const rate = await checkRateLimit(userId, bucket, limit, seconds);
+        if (!rate.allowed) return respondRateLimited(res, rate, 'Too many invite attempts. Please wait before trying again.');
+      }
+    } catch (_) {
+      return json(res, 503, { error: 'Invite protection is temporarily unavailable. Please retry shortly.' });
+    }
     const inviteCode = typeof body.invite_code === 'string' ? body.invite_code.trim().toUpperCase().replace(/\s+/g, '') : '';
     if (!/^[A-F0-9]{20}$/.test(inviteCode)) return json(res, 400, { error: 'Enter a valid 20-character group invite code.' });
-    const { rows } = await db.query('SELECT id,name,owner_id,invite_code,created_at FROM orbit_workspaces WHERE invite_code=$1 LIMIT 1', [inviteCode]);
+    const { rows } = await db.query('SELECT id,name,owner_id,created_at FROM orbit_workspaces WHERE invite_code=$1 LIMIT 1', [inviteCode]);
     if (!rows.length) return json(res, 404, { error: 'That invite code was not found. Ask the workspace owner for a fresh code.' });
     const workspace = rows[0];
-    const email=typeof body.email==='string'?body.email.trim().slice(0,254):'';
-    await db.query("INSERT INTO orbit_workspace_members(workspace_id,user_id,role,email) VALUES($1,$2,'member',$3) ON CONFLICT(workspace_id,user_id) DO NOTHING", [workspace.id,userId,email]);
+    const email=verifiedEmail;
+    // Re-check the still-current invite code in the INSERT statement to avoid a rotate/join race.
+    await db.query("INSERT INTO orbit_workspace_members(workspace_id,user_id,role,email) SELECT w.id,$2,'member',$3 FROM orbit_workspaces w WHERE w.id=$1 AND w.invite_code=$4 ON CONFLICT(workspace_id,user_id) DO NOTHING", [workspace.id,userId,email,inviteCode]);
     const membership = await db.query('SELECT role FROM orbit_workspace_members WHERE workspace_id=$1 AND user_id=$2', [workspace.id,userId]);
-    return json(res, 200, { workspace: { ...workspace, role: membership.rows[0]?.role || 'member' } });
+    if(!membership.rows[0])return json(res,404,{error:'That invite code is no longer valid. Ask the workspace owner for a fresh code.'});
+    return json(res, 200, { workspace: { id: workspace.id, name: workspace.name, owner_id: workspace.owner_id, created_at: workspace.created_at, role: membership.rows[0].role } });
   }
 
   return json(res, 400, { error: 'Choose create or join.' });

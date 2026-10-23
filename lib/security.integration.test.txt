@@ -1,0 +1,225 @@
+/*
+ * V3GAM security regression integration tests.
+ * Run with Node.js 20+: node --test lib/security.integration.test.mjs
+ * Use two disposable Supabase accounts, a reachable V3GAM_BASE_URL, and a
+ * disposable workspace owned by User B. Do not use personal accounts or data.
+ *
+ * Required environment:
+ * V3GAM_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY,
+ * V3GAM_TEST_A_EMAIL, V3GAM_TEST_A_PASSWORD,
+ * V3GAM_TEST_B_EMAIL, V3GAM_TEST_B_PASSWORD,
+ * V3GAM_TEST_WORKSPACE_ID (empty workspace owned by User B).
+ *
+ * The app has no workspace-delete endpoint, so the designated group should
+ * be a disposable test workspace and be deleted manually after the test.
+ */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+const BASE = (process.env.V3GAM_BASE_URL || '').replace(/\/+$/, '');
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+const ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const A_EMAIL = process.env.V3GAM_TEST_A_EMAIL || '';
+const A_PASSWORD = process.env.V3GAM_TEST_A_PASSWORD || '';
+const B_EMAIL = process.env.V3GAM_TEST_B_EMAIL || '';
+const B_PASSWORD = process.env.V3GAM_TEST_B_PASSWORD || '';
+const WORKSPACE_ID = Number(process.env.V3GAM_TEST_WORKSPACE_ID || 0);
+const HAS_AUTH_FIXTURES = !!(BASE && SUPABASE_URL && ANON_KEY && A_EMAIL && A_PASSWORD && B_EMAIL && B_PASSWORD);
+const HAS_ALL_FIXTURES = HAS_AUTH_FIXTURES && Number.isSafeInteger(WORKSPACE_ID) && WORKSPACE_ID > 0;
+
+async function api(path, options = {}) {
+  const headers = { Accept: 'application/json' };
+  if (options.token) headers.Authorization = 'Bearer ' + options.token;
+  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  const response = await fetch(BASE + path, {
+    method: options.method || 'GET',
+    headers,
+    ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {})
+  });
+  let json = null;
+  const responseText = await response.text();
+  try { json = JSON.parse(responseText); } catch {}
+  return { status: response.status, json, headers: response.headers, text: responseText };
+}
+
+async function login(email, password) {
+  const response = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+    method: 'POST',
+    headers: { apikey: ANON_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await response.json().catch(() => ({}));
+  assert.equal(response.status, 200, 'Test login failed with HTTP ' + response.status + '; check the disposable test account');
+  assert.ok(data.access_token, 'Supabase did not return an access token');
+  assert.ok(data.user && data.user.id, 'Supabase did not return a user ID');
+  return { token: data.access_token, id: data.user.id };
+}
+
+async function assertStatus(promise, expected, description) {
+  const response = await promise;
+  assert.equal(response.status, expected, description + '; got HTTP ' + response.status + ': ' + JSON.stringify(response.json || response.text).slice(0, 350));
+  return response;
+}
+
+test('anonymous requests are rejected by every protected API', async (t) => {
+  if (!BASE) return t.skip('Set V3GAM_BASE_URL to a reachable deployed V3GAM endpoint');
+  for (const path of ['/api/tasks', '/api/habits', '/api/habit-logs', '/api/notifications', '/api/reminders', '/api/workspaces']) {
+    await assertStatus(api(path), 401, 'Anonymous GET ' + path + ' must return 401');
+  }
+  await assertStatus(api('/api/assistant', { method: 'POST', body: {} }), 401,
+    'Anonymous POST /api/assistant must return 401 (not only 405 for GET)');
+});
+
+test('password login rate limits repeated invalid credentials with HTTP 429', { skip: !BASE ? 'Set V3GAM_BASE_URL to a reachable deployed V3GAM endpoint' : false }, async () => {
+  // Fake unique address means this test cannot lock a real account.
+  const email = 'v3gam-security-throttle-' + Date.now() + '@example.invalid';
+  const responses = [];
+  for (let i = 0; i < 6; i++) {
+    responses.push(await api('/api/login', {
+      method: 'POST',
+      body: { email, password: 'Invalid-Test-Password-123!' }
+    }));
+  }
+  assert.ok(responses.slice(0, 5).every(r => r.status === 401),
+    'First five bad passwords must return generic 401; got ' + responses.map(r => r.status).join(','));
+  assert.equal(responses[5].status, 429,
+    'Sixth bad password for same IP/email must return 429; got ' + responses.map(r => r.status).join(','));
+  assert.ok(responses[5].headers.get('retry-after'), 'Login 429 response needs Retry-After');
+});
+
+test('two-account isolation, immediate member revocation, invite and AI rate limits', {
+  skip: !HAS_ALL_FIXTURES ? 'Needs two disposable Supabase accounts and a disposable workspace owned by User B' : false
+}, async () => {
+  const A = await login(A_EMAIL, A_PASSWORD);
+  const B = await login(B_EMAIL, B_PASSWORD);
+
+  const wsRes = await assertStatus(api('/api/workspaces?workspace_id=' + encodeURIComponent(WORKSPACE_ID), { token: B.token }), 200,
+    'User B must own the designated test workspace');
+  const inviteCode = wsRes.json && wsRes.json.workspace && wsRes.json.workspace.invite_code;
+  assert.match(inviteCode || '', /^[A-F0-9]{20}$/i, 'Workspace invite code must be readable by its owner');
+
+  let taskId, sharedTaskId, habitId;
+  try {
+    const privateTask = await assertStatus(api('/api/tasks', {
+      token: B.token, method: 'POST',
+      body: { title: 'SECURITY-TEST-private-' + Date.now(), duration_minutes: 15 }
+    }), 201, 'Create User B private test task');
+    taskId = privateTask.json && privateTask.json.task && privateTask.json.task.id;
+    assert.ok(taskId, 'Task create response missing ID');
+
+    const habit = await assertStatus(api('/api/habits', {
+      token: B.token, method: 'POST',
+      body: { name: 'SECURITY-TEST-' + Date.now(), icon: '✦' }
+    }), 201, 'Create User B test habit');
+    habitId = habit.json && habit.json.habit && habit.json.habit.id;
+    assert.ok(habitId, 'Habit create response missing ID');
+
+    const sharedTask = await assertStatus(api('/api/tasks', {
+      token: B.token, method: 'POST',
+      body: { title: 'SECURITY-TEST-shared-' + Date.now(), duration_minutes: 15, workspace_id: WORKSPACE_ID }
+    }), 201, 'Create shared test task in User B workspace');
+    sharedTaskId = sharedTask.json && sharedTask.json.task && sharedTask.json.task.id;
+    assert.ok(sharedTaskId, 'Shared task create response missing ID');
+
+    const aTasks = await assertStatus(api('/api/tasks', { token: A.token }), 200, 'User A task list');
+    assert.ok(!(aTasks.json.tasks || []).some(x => String(x.id) === String(taskId)),
+      'User A must not read User B private task');
+    await assertStatus(api('/api/tasks?id=' + encodeURIComponent(taskId), {
+      token: A.token, method: 'PATCH', body: { title: 'UNAUTHORIZED EDIT' }
+    }), 404, 'User A must not edit User B private task');
+    await assertStatus(api('/api/tasks?id=' + encodeURIComponent(taskId), {
+      token: A.token, method: 'DELETE'
+    }), 404, 'User A must not delete User B private task');
+
+    const aHabits = await assertStatus(api('/api/habits', { token: A.token }), 200, 'User A habit list');
+    assert.ok(!(aHabits.json.habits || []).some(x => String(x.id) === String(habitId)),
+      'User A must not read User B habit');
+    await assertStatus(api('/api/habits?id=' + encodeURIComponent(habitId), {
+      token: A.token, method: 'PATCH', body: { name: 'UNAUTHORIZED EDIT' }
+    }), 404, 'User A must not edit User B habit');
+    await assertStatus(api('/api/habits?id=' + encodeURIComponent(habitId), {
+      token: A.token, method: 'DELETE'
+    }), 404, 'User A must not delete User B habit');
+
+    const aWorkspacesBefore = await assertStatus(api('/api/workspaces', { token: A.token }), 200,
+      'User A workspace list');
+    assert.ok(!(aWorkspacesBefore.json.workspaces || []).some(x => Number(x.id) === WORKSPACE_ID),
+      'User A must not read User B workspace in their workspace list');
+    await assertStatus(api('/api/workspaces?workspace_id=' + WORKSPACE_ID, { token: A.token }), 403,
+      'User A must not read/manage User B workspace before joining');
+    await assertStatus(api('/api/workspaces?workspace_id=' + WORKSPACE_ID, {
+      token: A.token, method: 'PATCH', body: { name: 'UNAUTHORIZED WORKSPACE EDIT' }
+    }), 405, 'Workspace update endpoint must not be available to User A or any caller');
+    await assertStatus(api('/api/workspaces?workspace_id=' + WORKSPACE_ID + '&user_id=' + encodeURIComponent(B.id), {
+      token: A.token, method: 'DELETE'
+    }), 403, 'User A must not remove the workspace owner');
+    await assertStatus(api('/api/workspaces', {
+      token: A.token, method: 'POST', body: { action: 'rotate_invite', workspace_id: WORKSPACE_ID }
+    }), 403, 'User A must not edit User B invite code');
+    await assertStatus(api('/api/workspaces?workspace_id=' + WORKSPACE_ID, {
+      token: A.token, method: 'DELETE'
+    }), 404, 'User A must not remove a workspace they do not belong to');
+
+    const joined = await assertStatus(api('/api/workspaces', {
+      token: A.token, method: 'POST', body: { action: 'join', invite_code: inviteCode }
+    }), 200, 'User A joins the test workspace');
+    assert.equal(Number(joined.json.workspace.id), WORKSPACE_ID);
+    const sharedBefore = await assertStatus(api('/api/tasks?workspace_id=' + WORKSPACE_ID, { token: A.token }), 200,
+      'Current member can read shared tasks before removal');
+    assert.ok((sharedBefore.json.tasks || []).some(x => String(x.id) === String(sharedTaskId)),
+      'Shared task should be visible before membership removal');
+
+    await assertStatus(api('/api/workspaces?workspace_id=' + WORKSPACE_ID + '&user_id=' + encodeURIComponent(A.id), {
+      token: B.token, method: 'DELETE'
+    }), 200, 'Owner removes User A from workspace');
+
+    await assertStatus(api('/api/workspaces?workspace_id=' + WORKSPACE_ID, { token: A.token }), 403,
+      'Removed member loses workspace access immediately');
+    const aWorkspacesAfter = await assertStatus(api('/api/workspaces', { token: A.token }), 200,
+      'User A workspace list after removal');
+    assert.ok(!(aWorkspacesAfter.json.workspaces || []).some(x => Number(x.id) === WORKSPACE_ID),
+      'Removed member must no longer see User B workspace in their list');
+    await assertStatus(api('/api/tasks?workspace_id=' + WORKSPACE_ID, { token: A.token }), 403,
+      'Removed member cannot read shared tasks immediately');
+    await assertStatus(api('/api/tasks?id=' + encodeURIComponent(sharedTaskId) + '&workspace_id=' + WORKSPACE_ID, {
+      token: A.token, method: 'PATCH', body: { title: 'UNAUTHORIZED AFTER REMOVAL' }
+    }), 403, 'Removed member cannot edit shared task');
+    await assertStatus(api('/api/tasks?id=' + encodeURIComponent(sharedTaskId) + '&workspace_id=' + WORKSPACE_ID, {
+      token: A.token, method: 'DELETE'
+    }), 403, 'Removed member cannot delete shared task');
+    await assertStatus(api('/api/tasks', {
+      token: A.token, method: 'POST',
+      body: { title: 'UNAUTHORIZED AFTER REMOVAL', duration_minutes: 15, workspace_id: WORKSPACE_ID }
+    }), 403, 'Removed member cannot create a shared task');
+
+    // Invalid-code guesses run after the successful group join and removal.
+    const badCodes = ['!'.repeat(20), '@'.repeat(20), '#'.repeat(20), '$'.repeat(20), '%'.repeat(20), '^'.repeat(20)];
+    const inviteResponses = [];
+    // Use User B's independent bucket: joining the workspace above consumed one
+    // attempt in User A's bucket. These malformed guesses are rate-limited before
+    // code validation and can never accidentally match a real invite code.
+    for (const code of badCodes) inviteResponses.push(await api('/api/workspaces', {
+      token: B.token, method: 'POST', body: { action: 'join', invite_code: code }
+    }));
+    assert.ok(inviteResponses.slice(0, 5).every(r => r.status === 400),
+      'First five malformed invite guesses should return 400; got ' + inviteResponses.map(r => r.status).join(','));
+    assert.equal(inviteResponses[5].status, 429,
+      'Sixth invite guess must be rate-limited; got ' + inviteResponses.map(r => r.status).join(','));
+    assert.ok(inviteResponses[5].headers.get('retry-after'), 'Invite 429 response needs Retry-After');
+
+    // Empty messages consume the rate limit but return before making an AI call.
+    const aiResponses = [];
+    for (let i = 0; i < 13; i++) aiResponses.push(await api('/api/assistant', { token: A.token, method: 'POST', body: {} }));
+    assert.ok(aiResponses.slice(0, 12).every(r => r.status === 400),
+      'First 12 empty AI calls should fail validation without model spend; got ' + aiResponses.map(r => r.status).join(','));
+    assert.equal(aiResponses[12].status, 429,
+      '13th AI request in one minute must be rate-limited; got ' + aiResponses.map(r => r.status).join(','));
+    assert.ok(aiResponses[12].headers.get('retry-after'), 'AI 429 response needs Retry-After');
+  } finally {
+    // Clear membership too, so a failed assertion cannot leave User A in the test group.
+    if (A && B) await api('/api/workspaces?workspace_id=' + WORKSPACE_ID + '&user_id=' + encodeURIComponent(A.id), { token: B.token, method: 'DELETE' }).catch(() => {});
+    if (sharedTaskId) await api('/api/tasks?id=' + encodeURIComponent(sharedTaskId) + '&workspace_id=' + WORKSPACE_ID, { token: B.token, method: 'DELETE' }).catch(() => {});
+    if (taskId) await api('/api/tasks?id=' + encodeURIComponent(taskId), { token: B.token, method: 'DELETE' }).catch(() => {});
+    if (habitId) await api('/api/habits?id=' + encodeURIComponent(habitId), { token: B.token, method: 'DELETE' }).catch(() => {});
+  }
+});

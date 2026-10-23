@@ -1,11 +1,17 @@
 import { db } from 'hatchable';
 import { requireSupabaseUser } from '../lib/supabase.js';
+import { canMutateTask, setApiSecurityHeaders, enforceWriteLimit } from '../lib/security.js';
 
 export const access = 'public';
 export const methods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
 function json(res, status, body) { return res.status(status).json(body); }
-function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+function validDate(s) {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [year, month, day] = s.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+}
 function cleanTitle(v) { return typeof v === 'string' ? v.trim().slice(0, 180) : ''; }
 function parseWorkspaceId(v) {
   if (v === undefined || v === null || v === '') return null;
@@ -18,7 +24,9 @@ async function isMember(userId, workspaceId) {
 }
 
 export default async function (req, res) {
+  setApiSecurityHeaders(req,res);
   const userId = await requireSupabaseUser(req,res); if(!userId)return;
+  if (req.method !== 'GET' && !await enforceWriteLimit(res, userId, 'tasks-write', 60)) return;
 
   if (req.method === 'GET') {
     const date = typeof req.query?.date === 'string' && validDate(req.query.date) ? req.query.date : null;
@@ -27,8 +35,8 @@ export default async function (req, res) {
     if (workspaceId !== null) {
       if (!await isMember(userId,workspaceId)) return json(res, 403, { error: 'You are not a member of this group workspace.' });
       const { rows } = await db.query(
-        'SELECT id,user_id,title,category,duration_minutes,starts_at,due_date,status,detail,source,workspace_id,created_at,updated_at FROM orbit_tasks WHERE workspace_id=$1 AND ($2::date IS NULL OR due_date=$2::date) ORDER BY due_date NULLS LAST,starts_at NULLS LAST,created_at DESC LIMIT 500',
-        [workspaceId,date]
+        'SELECT id,user_id,title,category,duration_minutes,starts_at,due_date,status,detail,source,workspace_id,created_at,updated_at FROM orbit_tasks WHERE workspace_id=$1 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$1 AND m.user_id=$3) AND ($2::date IS NULL OR due_date=$2::date) ORDER BY due_date NULLS LAST,starts_at NULLS LAST,created_at DESC LIMIT 500',
+        [workspaceId,date,userId]
       );
       return json(res,200,{tasks:rows});
     }
@@ -53,11 +61,12 @@ export default async function (req, res) {
     const workspaceId = parseWorkspaceId(b.workspace_id);
     if (Number.isNaN(workspaceId)) return json(res, 400, { error: 'Invalid workspace.' });
     if (workspaceId !== null && !await isMember(userId,workspaceId)) return json(res, 403, { error: 'You are not a member of this group workspace.' });
-    const { rows } = await db.query(
-      'INSERT INTO orbit_tasks(user_id,workspace_id,title,category,duration_minutes,starts_at,due_date,status,detail,source) VALUES($1,$2,$3,$4,$5,$6::timestamptz,$7::date,$8,$9,$10) RETURNING *',
-      [userId,workspaceId,title,category,duration,startsAt,dueDate,status,detail,b.source === 'voice' ? 'voice' : 'manual']
-    );
-    return json(res, 201, { task: rows[0] });
+    const params=[userId,workspaceId,title,category,duration,startsAt,dueDate,status,detail,b.source === 'voice' ? 'voice' : 'manual'];
+    const result = workspaceId !== null
+      ? await db.query('INSERT INTO orbit_tasks(user_id,workspace_id,title,category,duration_minutes,starts_at,due_date,status,detail,source) SELECT $1,$2,$3,$4,$5,$6::timestamptz,$7::date,$8,$9,$10 FROM orbit_workspace_members m WHERE m.workspace_id=$2 AND m.user_id=$1 RETURNING *',params)
+      : await db.query('INSERT INTO orbit_tasks(user_id,workspace_id,title,category,duration_minutes,starts_at,due_date,status,detail,source) VALUES($1,$2,$3,$4,$5,$6::timestamptz,$7::date,$8,$9,$10) RETURNING *',params);
+    if (!result.rows[0]) return json(res,403,{error:'You are no longer a member of this group workspace.'});
+    return json(res, 201, { task: result.rows[0] });
   }
 
   const b = req.body || {};
@@ -68,10 +77,17 @@ export default async function (req, res) {
   if (workspaceId !== null && !await isMember(userId,workspaceId)) return json(res,403,{error:'You are not a member of this group workspace.'});
 
   if (req.method === 'DELETE') {
-    const r = workspaceId !== null
-      ? await db.query('DELETE FROM orbit_tasks WHERE id=$1 AND workspace_id=$2', [id,workspaceId])
+    const found = workspaceId !== null
+      ? await db.query('SELECT * FROM orbit_tasks WHERE id=$1 AND workspace_id=$2 LIMIT 1', [id,workspaceId])
+      : await db.query('SELECT * FROM orbit_tasks WHERE id=$1 AND user_id=$2 AND workspace_id IS NULL LIMIT 1', [id,userId]);
+    const task = found.rows[0];
+    if (!task) return json(res,404,{error:'Task not found.'});
+    const permission = await canMutateTask(userId,task,workspaceId,'delete');
+    if (!permission.allowed) return json(res,403,{error:'You can delete only tasks you created. Group owners can delete any group task.'});
+    const deleted = workspaceId !== null
+      ? await db.query('DELETE FROM orbit_tasks WHERE id=$1 AND workspace_id=$2 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$2 AND m.user_id=$3) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$2 AND (w.owner_id=$3 OR orbit_tasks.user_id=$3))', [id,workspaceId,userId])
       : await db.query('DELETE FROM orbit_tasks WHERE id=$1 AND user_id=$2 AND workspace_id IS NULL', [id,userId]);
-    return json(res, r.rowCount ? 200 : 404, { ok: !!r.rowCount });
+    return deleted.rowCount ? json(res,200,{ok:true}) : json(res,403,{error:'Task permission changed. Refresh and try again.'});
   }
 
   const allowed = [];
@@ -85,11 +101,27 @@ export default async function (req, res) {
   if (b.due_date !== undefined) add('due_date',validDate(b.due_date)?b.due_date:null,'::date');
   if (b.starts_at !== undefined) add('starts_at',b.starts_at && !Number.isNaN(Date.parse(b.starts_at))?new Date(b.starts_at).toISOString():null,'::timestamptz');
   if (!allowed.length) return json(res,400,{error:'No editable fields supplied.'});
+  const taskLookup = workspaceId !== null
+    ? await db.query('SELECT * FROM orbit_tasks WHERE id=$1 AND workspace_id=$2 LIMIT 1',[id,workspaceId])
+    : await db.query('SELECT * FROM orbit_tasks WHERE id=$1 AND user_id=$2 AND workspace_id IS NULL LIMIT 1',[id,userId]);
+  const existingTask = taskLookup.rows[0];
+  if (!existingTask) return json(res,404,{error:'Task not found.'});
+  const onlyCompleting = b.status === 'done' && Object.keys(b).every(k => ['id','workspace_id','status'].includes(k));
+  const permission = await canMutateTask(userId,existingTask,workspaceId,onlyCompleting?'complete':'edit');
+  if (!permission.allowed) return json(res,403,{error:'You can edit only tasks you created. Assigned members may mark their assigned task complete; group owners can edit any group task.'});
   values.push(id);
   const taskIndex=values.length;
   let where;
-  if(workspaceId !== null){values.push(workspaceId);where='id=$'+taskIndex+' AND workspace_id=$'+values.length;}
-  else {values.push(userId);where='id=$'+taskIndex+' AND user_id=$'+values.length+' AND workspace_id IS NULL';}
+  if(workspaceId !== null){
+    values.push(workspaceId);const workspaceIndex=values.length;
+    values.push(userId);const userIndex=values.length;
+    where='id=$'+taskIndex+' AND workspace_id=$'+workspaceIndex+' AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$'+workspaceIndex+' AND m.user_id=$'+userIndex+')';
+  } else {values.push(userId);where='id=$'+taskIndex+' AND user_id=$'+values.length+' AND workspace_id IS NULL';}
+  if (workspaceId !== null) {
+    where += onlyCompleting
+      ? ' AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=orbit_tasks.workspace_id AND (w.owner_id=$'+(values.length)+' OR orbit_tasks.user_id=$'+(values.length)+' OR orbit_tasks.assigned_to_user_id=$'+(values.length)+'))'
+      : ' AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=orbit_tasks.workspace_id AND (w.owner_id=$'+(values.length)+' OR orbit_tasks.user_id=$'+(values.length)+'))';
+  }
   const { rows } = await db.query('UPDATE orbit_tasks SET '+allowed.join(',')+',updated_at=now() WHERE '+where+' RETURNING *',values);
   return rows[0] ? json(res,200,{task:rows[0]}) : json(res,404,{error:'Task not found.'});
 }
