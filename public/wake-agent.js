@@ -355,10 +355,8 @@
       return;
     }
     pendingInterim = full;
-    if (instance === rec && event && event.isTrusted === true && event.results && event.results.length > 0) {
-      if (window.v3gamAdaptiveLayer && typeof window.v3gamAdaptiveLayer.stampHardwareSpeechEvent === 'function') {
-        window.v3gamAdaptiveLayer.stampHardwareSpeechEvent(event, full);
-      }
+    if (instance === rec && event && window.v3gamAdaptiveLayer && typeof window.v3gamAdaptiveLayer.stampFromRecognitionHandler === "function") {
+      window.v3gamAdaptiveLayer.stampFromRecognitionHandler(event, cleanWakePrefix(full), instance);
     }
     showPill('LISTENING LIVE…', '“' + full + '”');
     clearTimeout(interimCommitTimer);

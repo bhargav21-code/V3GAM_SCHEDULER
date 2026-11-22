@@ -286,17 +286,60 @@
   }
 
   const CAT_WORDS = {
-    study: 'study', studying: 'study', exam: 'study', gate: 'study', revision: 'study', homework: 'study', reading: 'study', chapter: 'study', flashcards: 'study', math: 'study', maths: 'study', physics: 'study', quiz: 'study',
-    lab: 'lab', coding: 'lab', code: 'lab', project: 'lab', projects: 'lab', assignment: 'lab', practical: 'lab', report: 'lab', planning: 'lab', meeting: 'lab', hostel: 'lab', laundry: 'lab', chore: 'lab', chores: 'lab', clean: 'lab', cleaning: 'lab', errand: 'lab', errands: 'lab', movie: 'lab', trip: 'lab', packing: 'lab', organize: 'lab', review: 'lab',
-    lecture: 'lecture', class: 'lecture', classes: 'lecture', seminar: 'lecture', tutorial: 'lecture', workshop: 'lecture', webinar: 'lecture',
-    gym: 'gym', workout: 'gym', exercise: 'gym', wellness: 'gym', fitness: 'gym', dentist: 'gym', doctor: 'gym', appointment: 'gym', clinic: 'gym', checkup: 'gym', health: 'gym', meditation: 'gym', yoga: 'gym', run: 'gym', running: 'gym', walk: 'gym', walking: 'gym', swim: 'gym', shower: 'gym', sleep: 'gym', nap: 'gym', therapy: 'gym',
-    meal: 'meal', meals: 'meal', food: 'meal', lunch: 'meal', dinner: 'meal', breakfast: 'meal', brunch: 'meal', snack: 'meal', coffee: 'meal', tea: 'meal', cook: 'meal', cooking: 'meal', groceries: 'meal', grocery: 'meal', bake: 'meal', mil: 'meal', mill: 'meal'
+    study: "study", studying: "study", exam: "study", gate: "study", revision: "study", homework: "study", reading: "study", chapter: "study", flashcards: "study", math: "study", maths: "study", physics: "study", chemistry: "study", quiz: "study", ada: "study", electives: "study", syllabus: "study",
+    lab: "lab", coding: "lab", code: "lab", project: "lab", projects: "lab", assignment: "lab", practical: "lab", report: "lab", review: "lab", sprint: "lab", debug: "lab", deploy: "lab",
+    lecture: "lecture", class: "lecture", classes: "lecture", seminar: "lecture", tutorial: "lecture", workshop: "lecture", webinar: "lecture", tuition: "lecture",
+    gym: "gym", workout: "gym", exercise: "gym", wellness: "gym", fitness: "gym", dentist: "gym", doctor: "gym", clinic: "gym", checkup: "gym", health: "gym", meditation: "gym", yoga: "gym", run: "gym", running: "gym", walk: "gym", walking: "gym", swim: "gym", shower: "gym", sleep: "gym", nap: "gym", therapy: "gym",
+    meal: "meal", meals: "meal", food: "meal", lunch: "meal", dinner: "meal", breakfast: "meal", brunch: "meal", snack: "meal", coffee: "meal", tea: "meal", cook: "meal", cooking: "meal", bake: "meal", mil: "meal", mill: "meal",
+    personal: "personal", other: "personal", laundry: "personal", chore: "personal", chores: "personal", clean: "personal", cleaning: "personal", errand: "personal", errands: "personal", movie: "personal", hostel: "personal", trip: "personal", packing: "personal", organize: "personal", groceries: "personal", grocery: "personal", bill: "personal", bills: "personal", birthday: "personal", party: "personal", mom: "personal", dad: "personal", family: "personal", shopping: "personal"
   };
-  const CAT_ALT = Object.keys(CAT_WORDS).join('|');
+  const CAT_GENERIC_WEIGHTS = {
+    meeting: { cat: "personal", weight: 1 },
+    planning: { cat: "personal", weight: 1 },
+    appointment: { cat: "personal", weight: 1 },
+    call: { cat: "personal", weight: 1 },
+    clean: { cat: "personal", weight: 1 },
+    trip: { cat: "personal", weight: 1 },
+    organize: { cat: "personal", weight: 1 },
+    review: { cat: "lab", weight: 2 },
+    report: { cat: "lab", weight: 2 }
+  };
+  const CAT_COMPOUND_RULES = [
+    { re: /\b(?:clean\s+code|code\s+review|progress\s+report|lab\s+report|project\s+review|pull\s+request|bug\s+fix|system\s+design)\b/i, cat: "lab" },
+    { re: /\b(?:case\s+study|paper\s+reading|problem\s+set|choice\s+of\s+electives|exam\s+prep|gate\s+prep)\b/i, cat: "study" },
+    { re: /\b(?:dentist\s+appointment|doctor\s+appointment|cold\s+shower|gym\s+meeting|gym\s+session|morning\s+run)\b/i, cat: "gym" },
+    { re: /\b(?:lunch\s+meeting|lunch\s+break|dinner\s+meeting|breakfast\s+reset|coffee\s+break)\b/i, cat: "meal" },
+    { re: /\b(?:hostel\s+meeting|movie\s+planning|trip\s+planning|family\s+trip|pay\s+.*bill|birthday\s+party|call\s+mom)\b/i, cat: "personal" }
+  ];
+  const CAT_ALT = Object.keys(CAT_WORDS).join("|");
+  function inferTaskCategory(s, fallback = null) {
+    const raw = String(s || "").trim();
+    if (!raw) return fallback;
+    for (const rule of CAT_COMPOUND_RULES) {
+      if (rule.re.test(raw)) return rule.cat;
+    }
+    let bestCat = null;
+    let bestWeight = 0;
+    const tokens = norm(raw).split(" ").filter(Boolean);
+    for (const w of tokens) {
+      let cat = null;
+      let weight = 0;
+      if (CAT_GENERIC_WEIGHTS[w]) {
+        cat = CAT_GENERIC_WEIGHTS[w].cat;
+        weight = CAT_GENERIC_WEIGHTS[w].weight;
+      } else if (CAT_WORDS[w]) {
+        cat = CAT_WORDS[w];
+        weight = 3;
+      }
+      if (cat && weight > bestWeight) {
+        bestCat = cat;
+        bestWeight = weight;
+      }
+    }
+    return bestCat || fallback;
+  }
   function lastCategory(s) {
-    let found = null;
-    norm(s).split(' ').forEach((w) => { if (CAT_WORDS[w]) found = CAT_WORDS[w]; });
-    return found;
+    return inferTaskCategory(s, null);
   }
 
   /* ---------- Add-Task Conversational Flow Helpers ---------- */
@@ -383,8 +426,9 @@
         done.push('task name to "' + nm + '"');
         justSetName = true;
         if (!a.category) {
-          const inferred = lastCategory(nm);
-          if (inferred) setValue($('#taskCategory'), inferred);
+          ensureV101DomAndDraft();
+          const inferred = inferTaskCategory(nm, "personal");
+          if (inferred) setValue($("#taskCategory"), inferred);
         }
       }
     }
@@ -1591,21 +1635,22 @@
     },
     show_todays_flow(a) {
       resetFlow();
-      if (currentScreen() !== 'home') goScreen('home');
-      const card = $('.mini-agenda') || $('#dashboardTodayAgenda') || $('#timeline');
+      if (currentScreen() !== "home") goScreen("home");
+      const card = $(".mini-agenda") || $("#dashboardTodayAgenda") || $("#timeline");
       setTimeout(() => focusInView(card), 60);
       const ws = activeWsName();
-      const titles = $$('#timeline .task .tasktitle');
-      const times = $$('#timeline .time-label');
+      const tools = window.v3gamTaskTools;
+      const snap = (tools && typeof tools.getTaskSnapshot === "function") ? tools.getTaskSnapshot() : null;
+      const todayList = snap ? snap.todayAll : $$("#timeline .task .tasktitle").map((el, i) => ({ title: el.textContent.trim(), when: ($$("#timeline .time-label")[i] && $$("#timeline .time-label")[i].textContent.trim()) || "" }));
       if (a && a.newTask && flow.lastAdded && flow.lastAdded.title) {
-        return ok("Scrolled to Today's Flow in " + ws + '. Your task "' + flow.lastAdded.title + '"' + (flow.lastAdded.when ? ' is scheduled' + flow.lastAdded.when : ' is in your plan') + '.');
+        return ok("Scrolled to Today's Flow in " + ws + '. Your task "' + flow.lastAdded.title + '"' + (flow.lastAdded.when ? " is scheduled" + flow.lastAdded.when : " is in your plan") + ".");
       }
-      if (titles.length) {
-        const list = titles.slice(0, 3).map((el, i) => '"' + el.textContent.trim() + '"' + (times[i] ? ' at ' + times[i].textContent.trim() : '')).join(', ');
-        return ok("Here is Today's Flow in " + ws + ' with ' + titles.length + ' task' + (titles.length === 1 ? '' : 's') + ': ' + list + '.');
+      if (todayList.length) {
+        const list = todayList.slice(0, 3).map((t) => '"' + t.title + '"' + (t.when ? " at " + t.when : "")).join(", ");
+        return ok("Here is Today's Flow in " + ws + " with " + todayList.length + " task" + (todayList.length === 1 ? "" : "s") + ": " + list + ".");
       }
-      const switchHint = /^personal\b/i.test(ws) ? '' : ', or switch to Personal workspace';
-      return ok("Scrolled to Today's Flow in " + ws + '. Nothing is scheduled for today here yet - say "add a task" to schedule one' + switchHint + '.');
+      const switchHint = /^personal\b/i.test(ws) ? "" : ", or switch to Personal workspace";
+      return ok("Scrolled to Today's Flow in " + ws + '. Nothing is scheduled for today here yet - say "add a task" to schedule one' + switchHint + ".");
     },
     clear_task_draft(a) {
       if (!addActive()) goScreen('add');
@@ -1628,7 +1673,7 @@
       flow.step = 'edit_cat';
       flow.catDone = false;
       flow.durDone = false;
-      return ok('Sure! Which category—Study, Project / lab, Lecture, Wellness, or Meal? You can also say both, like "Wellness and 90 minutes".');
+      return ok('Sure! Which category—Study, Project / lab, Lecture, Wellness, Meal, or Personal / Other? You can also say both, like "Wellness and 90 minutes".');
     },
     fill_task_form(a) {
       if (a.name !== undefined) {
@@ -1672,7 +1717,7 @@
       const prompt = nextPrompt(justSetName).replace(/\b1\.5 hours\b/g, '90 minutes (1.5 hours)').replace(/\b1 hour\b/g, '60 minutes (1 hour)');
       if (justSetName && done.length === 1) {
         const curCat = catLabel();
-        const allCats = ['Study', 'Project / lab', 'Lecture', 'Wellness', 'Meal'];
+        const allCats = ['Study', 'Project / lab', 'Lecture', 'Wellness', 'Meal', 'Personal / Other'];
         const others = allCats.filter((c) => c.toLowerCase() !== curCat.toLowerCase());
         const otherStr = others.slice(0, -1).join(', ') + ', or ' + others[others.length - 1];
         return ok('I set the task name to "' + val('#taskName') + '" (say "change name to ..." if wrong). Category is currently ' + curCat + ' - keep ' + curCat + ', or change to ' + otherStr + '?');
@@ -1841,17 +1886,18 @@
     },
     read_remaining_tasks() {
       const tools = window.v3gamTaskTools;
-      const all = (tools && typeof tools.listAll === 'function') ? tools.listAll() : [];
-      const todayList = (tools && typeof tools.listToday === 'function') ? tools.listToday() : [];
+      const snap = (tools && typeof tools.getTaskSnapshot === "function") ? tools.getTaskSnapshot() : null;
+      const all = snap ? snap.allActive : ((tools && typeof tools.listAll === "function") ? tools.listAll() : []);
+      const todayList = snap ? snap.todayAll : ((tools && typeof tools.listToday === "function") ? tools.listToday() : []);
       const ws = activeWsName();
-      if (!all.length) return ok('You have 0 tasks in ' + ws + '.');
-      const todayRemaining = todayList.filter((t) => t.status !== 'done');
-      const todayDone = todayList.filter((t) => t.status === 'done');
+      if (!all.length) return ok("You have 0 tasks in " + ws + ".");
+      const todayRemaining = snap ? snap.todayRemaining : todayList.filter((t) => t.status !== "done");
+      const todayDone = snap ? snap.todayDone : todayList.filter((t) => t.status === "done");
       const otherDayTasks = all.filter((t) => Number(t.day) !== 0);
       const previewSource = todayRemaining.length ? todayRemaining : all;
-      const items = previewSource.slice(0, 4).map((t) => '"' + t.title + '" (' + (t.when || 'scheduled') + (t.day === 1 ? ' tomorrow' : t.day === 0 ? ' today' : '') + ')').join(', ');
-      const otherSuffix = otherDayTasks.length ? (', plus ' + otherDayTasks.length + ' on other days (' + all.length + ' total in workspace)') : '';
-      return ok('In ' + ws + ', you have ' + todayRemaining.length + ' remaining task' + (todayRemaining.length === 1 ? '' : 's') + ' today (out of ' + todayList.length + ' scheduled today, with ' + todayDone.length + ' completed' + otherSuffix + '): ' + items + '.');
+      const items = previewSource.slice(0, 4).map((t) => '"' + t.title + '" (' + (t.when || "scheduled") + (t.day === 1 ? " tomorrow" : t.day === 0 ? " today" : "") + ")").join(", ");
+      const otherSuffix = otherDayTasks.length ? (", plus " + otherDayTasks.length + " on other days (" + all.length + " total in workspace)") : "";
+      return ok("In " + ws + ", you have " + todayRemaining.length + " remaining task" + (todayRemaining.length === 1 ? "" : "s") + " today (out of " + todayList.length + " scheduled today, with " + todayDone.length + " completed" + otherSuffix + "): " + items + ".");
     },
     read_free_time() {
       const tools = window.v3gamTaskTools;
@@ -2026,7 +2072,14 @@
   let consecutiveFailures = 0;
 
   function ensureV101DomAndDraft() {
-    const sel = $('#taskDuration');
+    const catSel = $("#taskCategory");
+    if (catSel && !catSel.querySelector('option[value="personal"]')) {
+      const opt = document.createElement("option");
+      opt.value = "personal";
+      opt.textContent = "Personal / Other";
+      catSel.appendChild(opt);
+    }
+    const sel = $("#taskDuration");
     if (sel && !sel.querySelector('option[value="150"]')) {
       [['15', '15 minutes'], ['150', '150 minutes (2.5 hours)'], ['180', '180 minutes (3 hours)']].forEach(([v, txt]) => {
         if (!sel.querySelector('option[value="' + v + '"]')) {
@@ -2312,6 +2365,41 @@
   ]);
   const V102_INVISIBLE_RE = /[\u0000-\u001F\u007F-\u009F\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u200B-\u200F\u202A-\u202E\u2060-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0]/g;
 
+  const privateHardwareSpeechStamps = new Map();
+  const NATIVE_EVENT_TRUSTED_GETTER = (() => {
+    try {
+      if (typeof Event === "undefined") return null;
+      const d = Object.getOwnPropertyDescriptor(Event.prototype, "isTrusted")
+        || Object.getOwnPropertyDescriptor(new Event("v3gam_init"), "isTrusted");
+      return (d && typeof d.get === "function") ? d.get : null;
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  function verifyHardwareSpeechRecognitionEvent(event) {
+    if (!event || typeof event !== "object") return false;
+    if (typeof Event === "undefined" || !(event instanceof Event)) return false;
+    const SRE = (typeof window !== "undefined") && (window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent);
+    if (!SRE || !(event instanceof SRE)) return false;
+    const ownDesc = Object.getOwnPropertyDescriptor(event, "isTrusted");
+    if (ownDesc) {
+      if (typeof ownDesc.get !== "function" || ownDesc.configurable !== false) return false;
+    }
+    if (typeof NATIVE_EVENT_TRUSTED_GETTER !== "function") return false;
+    let trusted = false;
+    try {
+      trusted = NATIVE_EVENT_TRUSTED_GETTER.call(event) === true;
+    } catch (_) {
+      return false;
+    }
+    if (!trusted) return false;
+    if (!event.results || typeof event.results.length !== "number" || event.results.length < 1) return false;
+    const firstRes = event.results[0];
+    if (!firstRes || !firstRes[0] || typeof firstRes[0].transcript !== "string") return false;
+    return true;
+  }
+
   class BoundedAdaptiveVoiceLayer {
     constructor(userId = null) {
       this.MAX_ENTRIES = 25;
@@ -2329,41 +2417,54 @@
       this.auditLog = [];
       this.lastAdaptedExecution = null;
       this._lastHardwareTtsActiveAt = 0;
-      this._hardwareSpeechStamps = new Map();
       this.setUser(userId);
     }
 
     normalizePhrase(raw) {
-      return String(raw || '')
-        .normalize('NFKC')
-        .replace(V102_INVISIBLE_RE, '')
+      return String(raw || "")
+        .normalize("NFKC")
+        .replace(V102_INVISIBLE_RE, "")
         .toLowerCase()
-        .replace(/[^\p{L}\p{N}\s']/gu, ' ')
-        .replace(/\s+/g, ' ')
+        .replace(/[^\p{L}\p{N}\s']/gu, " ")
+        .replace(/\s+/g, " ")
         .trim();
     }
 
-    stampHardwareSpeechEvent(event, transcript, now = Date.now()) {
-      if (!event || typeof event !== 'object' || event.isTrusted !== true || !event.results || typeof event.results.length !== 'number') {
+    isRealSpeechRecognitionEvent(event) {
+      return verifyHardwareSpeechRecognitionEvent(event);
+    }
+
+    stampFromRecognitionHandler(event, transcript, activeRecInstance, now = Date.now()) {
+      const dbg = window.__v3gamWakeAgentDebug;
+      if (!dbg || typeof dbg.getRec !== "function" || !activeRecInstance || dbg.getRec() !== activeRecInstance) {
+        return false;
+      }
+      if (!verifyHardwareSpeechRecognitionEvent(event)) {
         return false;
       }
       const norm = this.normalizePhrase(transcript);
       if (!norm) return false;
-      this._hardwareSpeechStamps.set(norm, now);
-      if (this._hardwareSpeechStamps.size > 30) {
-        const oldest = this._hardwareSpeechStamps.keys().next().value;
-        this._hardwareSpeechStamps.delete(oldest);
+      privateHardwareSpeechStamps.set(norm, now);
+      if (privateHardwareSpeechStamps.size > 30) {
+        const oldest = privateHardwareSpeechStamps.keys().next().value;
+        privateHardwareSpeechStamps.delete(oldest);
       }
       return true;
     }
 
+    stampHardwareSpeechEvent(event, transcript, now = Date.now()) {
+      const dbg = window.__v3gamWakeAgentDebug;
+      const activeRec = dbg && typeof dbg.getRec === "function" ? dbg.getRec() : null;
+      return this.stampFromRecognitionHandler(event, transcript, activeRec, now);
+    }
+
     _hasVerifiedHardwareMicEvent(normPhrase, context = {}, now = Date.now()) {
       const ev = context && context.recognitionEvent;
-      if (ev && typeof ev === 'object' && ev.isTrusted === true && ev.results && typeof ev.results.length === 'number') {
+      if (ev && verifyHardwareSpeechRecognitionEvent(ev)) {
         return true;
       }
-      const stampedAt = this._hardwareSpeechStamps.get(normPhrase);
-      if (typeof stampedAt === 'number' && (now - stampedAt) >= 0 && (now - stampedAt) <= 15000) {
+      const stampedAt = privateHardwareSpeechStamps.get(normPhrase);
+      if (typeof stampedAt === "number" && (now - stampedAt) >= 0 && (now - stampedAt) <= 15000) {
         return true;
       }
       return false;
@@ -2392,7 +2493,7 @@
       this.candidates.clear();
       this.learnedMap.clear();
       this.quarantineMap.clear();
-      this._hardwareSpeechStamps.clear();
+      privateHardwareSpeechStamps.clear();
       this.lastAdaptedExecution = null;
       this.userId = null;
       this.isAuthenticatedUser = false;
@@ -2441,9 +2542,12 @@
       if (this._isHardwareTtsActive(now) || Boolean(context && context.ttsSpeaking) || (context && typeof context.msSinceTtsEnd === 'number' && context.msSinceTtsEnd < this.TTS_ECHO_COOLDOWN_MS)) {
         return 'blocked:tts_echo_window';
       }
+      if (!context || context.source !== "trusted_user_mic") {
+        return "blocked:untrusted_content_source";
+      }
       const norm = this.normalizePhrase(phrase);
       if (!this._hasVerifiedHardwareMicEvent(norm, context, now)) {
-        return 'blocked:untrusted_content_source';
+        return "blocked:untrusted_content_source";
       }
       const qUntil = this.quarantineMap.get(norm);
       if (typeof qUntil === 'number' && now < qUntil) return 'blocked:quarantined_after_rollback';
@@ -2952,34 +3056,77 @@
     return parseSingle(t0, true);
   }
 
-  function tryText(text) {
+  let pendingFailedAdaptiveTurn = null;
+
+  function deriveAdaptiveTargetFromCommand(command, args = {}) {
+    if (!command || (args && args._adaptedAnnouncement)) return null;
+    if (command === "open_screen" && args.screen) return "open_screen:" + args.screen;
+    if (command === "open_plan_tab" && args.tab) return "open_plan_tab:" + args.tab;
+    if (command === "set_sidebar" && args.mode) return "set_sidebar:" + args.mode;
+    if (command === "read_info" && args.what) return "read_info:" + args.what;
+    if (command === "show_todays_flow") return "read_info:schedule";
+    return null;
+  }
+
+  function tryText(text, options = {}) {
     turnCounter += 1;
-    const rawTrim = String(text || '').trim();
+    let turnLearningResult = null;
+    const now = (options && typeof options.now === "number" && Number.isFinite(options.now)) ? options.now : Date.now();
+    const rawTrim = String(text || "").trim();
+    const layer = window.v3gamAdaptiveLayer;
+    const normUtterance = layer ? layer.normalizePhrase(rawTrim) : "";
+    const hasHardwareMicStamp = Boolean(layer && normUtterance && layer._hasVerifiedHardwareMicEvent(normUtterance, options, now));
+
     if (/^(?:try\s+again|retry(?:\s+that)?)$/i.test(rawTrim) && lastFailedCommandText) {
       const toRetry = lastFailedCommandText;
-      lastFailedCommandText = '';
-      return tryText(toRetry);
+      lastFailedCommandText = "";
+      return tryText(toRetry, options);
     }
     let cmd = null;
     try { cmd = parseMultiOrSingle(text); } catch (_) { cmd = null; }
     if (!cmd) {
       lastFailedCommandText = rawTrim;
+      pendingFailedAdaptiveTurn = { rawPhrase: rawTrim, normPhrase: normUtterance, at: now, hasHardwareMicStamp };
       return null;
     }
-    if (pending && cmd.command !== 'confirm_pending' && cmd.command !== 'cancel_pending') {
+    if (pending && cmd.command !== "confirm_pending" && cmd.command !== "cancel_pending") {
       pending = null;
     }
     const r = runCommand(cmd.command, cmd.args);
     if (pending && !pending.createdTurn) pending.createdTurn = turnCounter;
-    if (!r.ok) lastFailedCommandText = rawTrim;
+    if (!r.ok) {
+      lastFailedCommandText = rawTrim;
+      pendingFailedAdaptiveTurn = { rawPhrase: rawTrim, normPhrase: normUtterance, at: now, hasHardwareMicStamp };
+    } else if (pendingFailedAdaptiveTurn && layer) {
+      const canonicalTarget = deriveAdaptiveTargetFromCommand(cmd.command, cmd.args || {});
+      const prevFail = pendingFailedAdaptiveTurn;
+      pendingFailedAdaptiveTurn = null;
+      if (canonicalTarget && (now - prevFail.at) >= 0 && (now - prevFail.at) <= 45000) {
+        turnLearningResult = layer.recordCorrection(
+          prevFail.rawPhrase,
+          canonicalTarget,
+          {
+            source: (prevFail.hasHardwareMicStamp && hasHardwareMicStamp) ? "trusted_user_mic" : "untrusted_text",
+            now
+          }
+        );
+      }
+    }
     if (r.pillTitle || !r.ok) {
-      const titleText = r.pillTitle || (/could not find/i.test(r.reply) ? 'CONTROL NOT FOUND · TRY CLOSEST MATCH' : /\?$/.test(r.reply) ? 'CLARIFY CHOICE' : 'ACTION NOTICE');
+      const titleText = r.pillTitle || (/could not find/i.test(r.reply) ? "CONTROL NOT FOUND · TRY CLOSEST MATCH" : /\?$/.test(r.reply) ? "CLARIFY CHOICE" : "ACTION NOTICE");
       setTimeout(() => {
-        const tEl = $('#v3gamLivePillTitle');
+        const tEl = $("#v3gamLivePillTitle");
         if (tEl && !r.ok) tEl.textContent = titleText;
       }, 15);
     }
-    return { ok: r.ok, reply: r.reply, command: cmd.command, ...(r.silent ? { silent: true } : {}), ...(r.pillTitle ? { pillTitle: r.pillTitle } : {}) };
+    return {
+      ok: r.ok,
+      reply: r.reply,
+      command: cmd.command,
+      ...(turnLearningResult ? { adaptiveLearning: turnLearningResult } : {}),
+      ...(r.silent ? { silent: true } : {}),
+      ...(r.pillTitle ? { pillTitle: r.pillTitle } : {})
+    };
   }
 
   function hint() {

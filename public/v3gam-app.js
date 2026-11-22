@@ -1,9 +1,9 @@
 (function(){
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const state={theme:'light',screen:'home',focused:null,pending:null,recording:false,preview:false,rec:null,tm:null,id:20};
-const names={study:'Study',lecture:'Lecture',meal:'Meal',gym:'Wellness',lab:'Project / lab'};
-const icons={study:'✦',lecture:'▤',meal:'◓',gym:'↗',lab:'⌘'};
-const classes={study:'study',lecture:'lecture',meal:'meal',gym:'gym',lab:'lab'};
+const names={study:'Study',lecture:'Lecture',meal:'Meal',gym:'Wellness',lab:'Project / lab',personal:'Personal / Other'};
+const icons={study:'✦',lecture:'▤',meal:'◓',gym:'↗',lab:'⌘',personal:'🏠'};
+const classes={study:'study',lecture:'lecture',meal:'meal',gym:'gym',lab:'lab',personal:'meal'};
 const demoTasks=[
 {id:1,title:'Breakfast & reset',category:'meal',start:'08:00',duration:30,status:'done',day:0,detail:'Ease into the morning. No rushing.'},
 {id:2,title:'Data Structures lecture',category:'lecture',start:'09:00',duration:60,status:'done',day:0,detail:'Lecture notes and key examples.'},
@@ -156,8 +156,34 @@ selectedPlanDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());
 $('#todayLabel').textContent=days[date.getDay()].toUpperCase()+' · '+date.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();
 $('#themeToggle').addEventListener('click',()=>{state.theme=state.theme==='dark'?'light':'dark';$('#app').classList.toggle('light',state.theme==='light');$('#themeToggle').textContent=state.theme==='light'?'☾':'☼';$('#themeToggle').setAttribute('aria-label',state.theme==='light'?'Switch to dark theme':'Switch to light theme');toast(state.theme==='light'?'Light theme enabled':'Dark theme enabled')});
 function fitLaptopPreview(){const scale=Math.min(1,Math.max(.5,(window.innerHeight-48)/844));document.documentElement.style.setProperty('--preview-scale',String(scale))}window.addEventListener('resize',fitLaptopPreview);fitLaptopPreview();
+function getWorkspaceTaskSnapshot(){
+ const mapTask=t=>({id:t.id,title:t.title,when:t.start?clock(t.start):"",start:t.start||"09:00",duration:Number(t.duration)||60,category:t.category||"study",day:Number(t.day)||0,status:t.status||"planned",detail:t.detail||""});
+ const allActive=tasks.filter(t=>t&&t.title&&t.status!=="skipped");
+ const todayRaw=allActive.filter(t=>Number(t.day)===0).slice().sort((a,b)=>mins(a.start||"09:00")-mins(b.start||"09:00"));
+ const todayAll=todayRaw.map(mapTask);
+ const todayDone=todayAll.filter(t=>t.status==="done");
+ const todayRemaining=todayAll.filter(t=>t.status!=="done");
+ const tomorrowAll=allActive.filter(t=>Number(t.day)===1).slice().sort((a,b)=>mins(a.start||"09:00")-mins(b.start||"09:00")).map(mapTask);
+ const allDone=allActive.filter(t=>t.status==="done");
+ const totalMinutesToday=todayAll.reduce((n,t)=>n+t.duration,0);
+ return {
+  allActive:allActive.map(mapTask),
+  todayRaw,
+  todayAll,
+  todayDone,
+  todayRemaining,
+  tomorrowAll,
+  totalCount:allActive.length,
+  totalDoneCount:allDone.length,
+  todayCount:todayAll.length,
+  todayDoneCount:todayDone.length,
+  todayRemainingCount:todayRemaining.length,
+  tomorrowCount:tomorrowAll.length,
+  totalMinutesToday
+ };
+}
 function renderTimeline(){
-const el=$('#timeline');el.innerHTML='';const today=tasks.filter(t=>t.day===0&&t.status!=='skipped').sort((a,b)=>mins(a.start)-mins(b.start));
+const el=$("#timeline");el.innerHTML="";const snap=getWorkspaceTaskSnapshot(),today=snap.todayRaw;
 if(!today.length){el.innerHTML='<div class="insight"><b>Nothing scheduled yet</b><p>Your day is clear. Add your first task, or open Demo to explore how V3GAM works.</p></div>';$('#completedCount').textContent='0';$('#tasksLeft').textContent='0 / 0';$('#tasksSub').textContent='A fresh start';$('#taskProgress').style.width='0%';$('#focusSummary').textContent='0h 0m';$('#focusProgress').style.width='0%';renderDashboard();return}
 let now=false;
 today.forEach(t=>{
@@ -166,7 +192,7 @@ const row=document.createElement('div');row.className='time-row';const dur=t.dur
 row.innerHTML='<div class="time-label">'+clock(t.start)+'</div><div class="time-content"><div class="task '+classes[t.category]+(t.status==='done'?' completed':'')+'"><button type="button" class="task-check '+(t.status==='done'?'checked':'')+'" data-toggle-task="'+t.id+'" aria-label="'+(t.status==='done'?'Mark incomplete':'Mark done')+'" aria-pressed="'+(t.status==='done')+'">'+(t.status==='done'?'✓':'')+'</button><button type="button" class="task-open" data-task="'+t.id+'"><i class="mark"></i><div class="taskmain"><div class="tasktitle">'+esc(t.title)+'</div><div class="taskmeta">'+names[t.category]+' · '+(t.status==='done'?'Completed':t.status==='active'?'In progress':'Smart scheduled')+'</div></div><span class="duration">'+dur+'</span></button></div></div>';el.appendChild(row)
 });
 if(!now){const n=document.createElement('div');n.className='now';n.innerHTML='<i class="dot"></i> Keep your momentum';el.appendChild(n)}
-const done=today.filter(t=>t.status==='done').length,left=today.filter(t=>t.status!=='done').length,total=today.reduce((n,t)=>n+t.duration,0);
+const done=snap.todayDoneCount,left=snap.todayRemainingCount,total=snap.totalMinutesToday;
 $('#completedCount').textContent=done;$('#tasksLeft').textContent=left+' / '+today.length;$('#tasksSub').textContent=left<=2?'Almost there':'You’re on track';$('#taskProgress').style.width=(done/today.length*100)+'%';
 $('#focusSummary').textContent=Math.floor(total/60)+'h '+total%60+'m';$('#focusProgress').style.width=(done/today.length*100)+'%';
 renderDashboard();
@@ -309,7 +335,7 @@ function updateInsights(){
 }
 let dashboardWeekOffset=0;let dashboardFilter='';
 function renderDashboard(){
- const total=tasks.filter(t=>t.status!=='skipped').length,todayTasks=tasks.filter(t=>Number(t.day)===0&&t.status!=='skipped'),todayCount=todayTasks.length,closed=tasks.filter(t=>t.status==='done').length,percent=Math.round(closed/Math.max(total,1)*100);
+ const snap=getWorkspaceTaskSnapshot(),total=snap.totalCount,todayTasks=snap.todayRaw,todayCount=snap.todayCount,closed=snap.totalDoneCount,percent=Math.round(closed/Math.max(total,1)*100);
  $('#dashFocus').textContent=$('#focusSummary').textContent;
  $('#dashTaskCount').textContent=todayCount;$('#dashClosed').textContent=closed;
  const dashEm=$('#dashTaskCount')&&$('#dashTaskCount').parentElement&&$('#dashTaskCount').parentElement.querySelector('em');
@@ -325,7 +351,7 @@ function renderDashboard(){
  const dnames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
  $('#dashboardWeekHeader').innerHTML='';$('#dashboardCalendar').innerHTML='';
  const q=dashboardFilter.trim().toLowerCase();
- const cats={study:'study',lecture:'lecture',meal:'meal',gym:'gym',lab:'lab'};
+ const cats={study:'study',lecture:'lecture',meal:'meal',gym:'gym',lab:'lab',personal:'meal'};
  const allMatch=tasks.filter(t=>t.status!=='skipped'&&(!q||(t.title+' '+names[t.category]+' '+t.detail).toLowerCase().includes(q)));
  for(let i=0;i<7;i++){
   const d=new Date(start);d.setDate(start.getDate()+i);
@@ -835,6 +861,143 @@ function orbitSetAuthMode(mode){
 }
 document.getElementById('orbitAuthSwitch').addEventListener('click',()=>orbitSetAuthMode(orbitAuthMode==='signup'?'login':'signup'));
 document.getElementById('orbitAuthForgot').addEventListener('click',()=>orbitSetAuthMode('reset'));
+async function orbitCompleteSignedInBootstrap(session){
+ if(!session||!session.user)return;
+ orbitSessionActive=true;
+ orbitDemoMode=false;
+ window._orbitSignedInBootstrapped=true;
+ orbitUserId=session.user.id||"";
+ orbitUserEmail=session.user.email||"";
+ if(window.v3gamAdaptiveLayer&&typeof window.v3gamAdaptiveLayer.setUser==="function"){
+  window.v3gamAdaptiveLayer.setUser(orbitUserId||orbitUserEmail);
+ }
+ orbitUpdateElevenLabsAvailability();
+ orbitUpdateGreeting(session.user);
+ orbitLoadHabitScope();
+ if(orbitAuthPanel)orbitAuthPanel.hidden=true;
+ const signOutBtn=document.getElementById("orbitSignOut");
+ if(signOutBtn)signOutBtn.hidden=false;
+ const demoToggle=document.getElementById("demoToggle");
+ if(demoToggle){demoToggle.textContent="▷ Demo";demoToggle.classList.remove("is-demo");}
+ const demoExit=document.getElementById("demoExitFloating");
+ if(demoExit){demoExit.hidden=true;demoExit.classList.remove("visible");}
+ orbitAuthNotice("");
+ await orbitRestoreWorkspaceSelection();
+ await orbitLoadTasks();
+ orbitCheckUpcomingReminders();
+ orbitLoadNotifications();
+ orbitStartReminderPolling();
+ go("home");
+}
+window.addEventListener("load",()=>{
+ const hash=location.hash||"",query=new URLSearchParams(location.search);
+ if(hash.includes("type=recovery")||query.get("type")==="recovery"){
+  orbitSetAuthMode("update");orbitAuthPanel.hidden=false;
+  orbitAuthNotice("Recovery link recognized. Enter your new password.");return;
+ }
+ if(query.get("mode")==="signup"){
+  orbitSetAuthMode("signup");orbitAuthPanel.hidden=false;
+  orbitAuthPanel.setAttribute("data-entry-mode","signup");
+ }
+});
+document.getElementById("orbitAuthForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!window.orbitSupabase){orbitAuthNotice("Authentication setup is not complete yet. Please try again later.",true);return;}
+ const email=document.getElementById("orbitEmail").value.trim(),password=document.getElementById("orbitPassword").value,username=document.getElementById("orbitUsername").value.trim();
+ if(orbitAuthMode==="signup"&&(username.length<3||username.length>24||!Array.from(username).every(ch=>/[A-Za-z0-9_.-]/.test(ch)))){
+  orbitAuthNotice("Choose a username with 3-24 letters, numbers, dots, underscores, or hyphens.",true);return;
+ }
+ const submit=document.getElementById("orbitAuthSubmit");submit.disabled=true;submit.textContent="Please wait…";orbitAuthNotice("");
+ try{
+  let result;
+  if(orbitAuthMode==="signup"){
+   orbitPendingEmail=email;orbitPendingPassword=password;
+   result=await window.orbitSupabase.auth.signUp({email,password,options:{data:{app:"v3gam",username,display_name:username,name:username},emailRedirectTo:location.origin}});
+  }else if(orbitAuthMode==="verify"){
+   const token=document.getElementById("orbitEmailOtp").value.trim();
+   result=await window.orbitSupabase.auth.verifyOtp({email:orbitPendingEmail||email,token,type:"signup"});
+  }else if(orbitAuthMode==="reset"){
+   orbitPendingEmail=email;
+   result=await window.orbitSupabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+  }else if(orbitAuthMode==="recoveryOtp"){
+   const token=document.getElementById("orbitEmailOtp").value.trim();
+   result=await window.orbitSupabase.auth.verifyOtp({email:orbitPendingEmail||email,token,type:"recovery"});
+  }else if(orbitAuthMode==="update"){
+   result=await window.orbitSupabase.auth.updateUser({password});
+  }else{
+   const response=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",cache:"no-store",body:JSON.stringify({email,password})});
+   const payload=await response.json().catch(()=>({}));
+   if(!response.ok)throw Object.assign(new Error(payload.error||"Authentication failed. Please try again."),{status:response.status});
+   if(!payload.session?.access_token||!payload.session?.refresh_token)throw new Error("Authentication returned an invalid session.");
+   result=await window.orbitSupabase.auth.setSession({access_token:payload.session.access_token,refresh_token:payload.session.refresh_token});
+  }
+  if(result.error)throw result.error;
+  if(orbitAuthMode==="signup"){
+   orbitSetAuthMode("verify");document.getElementById("orbitEmail").value=orbitPendingEmail;
+   orbitAuthNotice("Verification code sent. Check your inbox and enter the code to finish registration.");
+  }else if(orbitAuthMode==="verify"){
+   orbitPendingPassword="";orbitAuthNotice("Email verified! Your V3GAM account is ready.");
+   if(result.data?.session){await orbitCompleteSignedInBootstrap(result.data.session);}
+   else{orbitSetAuthMode("login");document.getElementById("orbitEmail").value=orbitPendingEmail;orbitAuthNotice("Email verified! Sign in with your new account.");}
+  }else if(orbitAuthMode==="reset"){
+   orbitSetAuthMode("recoveryOtp");document.getElementById("orbitEmail").value=orbitPendingEmail;document.getElementById("orbitEmail").readOnly=true;
+   orbitAuthNotice("If an account exists for that email, a password-reset code has been sent. Enter the code from your email.");
+  }else if(orbitAuthMode==="recoveryOtp"){
+   orbitSetAuthMode("update");document.getElementById("orbitEmail").value=orbitPendingEmail;document.getElementById("orbitEmail").readOnly=true;
+   orbitAuthNotice("Code verified. Enter your new password.");
+  }else if(orbitAuthMode==="update"){
+   orbitAuthNotice("Password updated. You can now sign in with your new password.");
+   await window.orbitSupabase.auth.signOut();orbitSetAuthMode("login");document.getElementById("orbitEmail").value=orbitPendingEmail;
+  }else if(result.data?.session){
+   await orbitCompleteSignedInBootstrap(result.data.session);
+  }else{
+   orbitAuthNotice("Check your email for the verification link, then sign in.");
+  }
+ }catch(err){
+  orbitAuthNotice(err.message||"Authentication failed. Please try again.",true);
+ }finally{
+  submit.disabled=false;
+  submit.textContent=orbitAuthMode==="signup"?"Send verification code":orbitAuthMode==="verify"||orbitAuthMode==="recoveryOtp"?"Verify code":orbitAuthMode==="reset"?"Send reset code":orbitAuthMode==="update"?"Update password":"Sign in";
+ }
+});
+(async function initV3GAMSupabaseAuth(){
+ try{
+  const response=await fetch("/api/auth-config",{cache:"no-store"}),config=await response.json();
+  if(!response.ok||!config.url||!config.key)throw new Error(config.error||"Supabase settings are missing.");
+  if(!window.supabase?.createClient)throw new Error("Could not load the secure authentication client. Refresh the page.");
+  window.orbitSupabase=window.supabase.createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}});
+  const {data:{session},error}=await window.orbitSupabase.auth.getSession();
+  if(error)throw error;
+  if(session){
+   await orbitCompleteSignedInBootstrap(session);
+  }else{
+   orbitSessionActive=false;window._orbitSignedInBootstrapped=false;orbitUserId="";orbitUserEmail="";orbitWorkspaceId=null;orbitLoadHabitScope();
+   document.getElementById("orbitSignOut").hidden=true;
+   if(!orbitDemoMode){orbitAuthPanel.hidden=false;tasks.splice(0,tasks.length);refreshTaskViews();}
+  }
+  orbitUpdateElevenLabsAvailability();
+  window.orbitSupabase.auth.onAuthStateChange((event,session)=>{
+   if(event==="SIGNED_IN"&&session){
+    orbitCompleteSignedInBootstrap(session);
+   }
+   if(event==="SIGNED_OUT"){
+    orbitSessionActive=false;window._orbitSignedInBootstrapped=false;
+    if(window.v3gamAdaptiveLayer&&typeof window.v3gamAdaptiveLayer.clearOnSignOut==="function"){
+     window.v3gamAdaptiveLayer.clearOnSignOut();
+    }
+    orbitUpdateElevenLabsAvailability();orbitUserId="";orbitUserEmail="";orbitDisplayName="";
+    if(orbitReminderInterval){clearInterval(orbitReminderInterval);orbitReminderInterval=null;}
+    orbitWorkspaceId=null;orbitWorkspaces=[];$("#groupManagementDashboard").hidden=true;$("#dashboardGroupMembers").innerHTML="";$("#dashboardGroupInviteCode").textContent="";
+    orbitLoadHabitScope();$("#workspaceName").textContent="V3GAM Pro";$("#workspaceSubtitle").textContent="Personal workspace";$("#groupWorkspaceItems").innerHTML="";
+    document.getElementById("orbitSignOut").hidden=true;
+    if(!orbitDemoMode){tasks.splice(0,tasks.length);orbitAuthPanel.hidden=false;refreshTaskViews();}
+   }
+   if(event==="PASSWORD_RECOVERY"){orbitSessionActive=true;orbitSetAuthMode("update");orbitAuthPanel.hidden=false;}
+  });
+ }catch(err){
+  if(!orbitDemoMode){orbitAuthPanel.hidden=false;orbitAuthNotice(err.message||"Supabase is not configured. Set up your project to enable accounts.",true);}
+ }
+})();
 document.getElementById('orbitSignOut').addEventListener('click',async()=>{
  try{window._orbitSignedInBootstrapped=false;await window.orbitSupabase?.auth.signOut();document.getElementById('orbitSignOut').hidden=true;orbitAuthPanel.hidden=false;orbitSetAuthMode('login');}
  catch(e){toast('Could not sign out. Please try again.')}
@@ -911,8 +1074,10 @@ window.v3gamTaskTools={
   return false;
  },
  find(q){const n=String(q||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(!n)return[];const k=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();const list=tasks.filter(t=>t&&t.title&&t.status!=='skipped');const exact=list.filter(t=>k(t.title)===n);const pool=exact.length?exact:list.filter(t=>{const m=k(t.title);return m.includes(n)||(m.length>=3&&n.includes(m))});return pool.map(t=>{let when='';try{when=t.start?clock(t.start):''}catch(_){}return {id:t.id,title:t.title,when,start:t.start,duration:t.duration,category:t.category,day:t.day,status:t.status,exact:k(t.title)===n}})},
- listAll(){return tasks.filter(t=>t&&t.title&&t.status!=='skipped').map(t=>({id:t.id,title:t.title,when:t.start?clock(t.start):'',start:t.start,duration:t.duration,category:t.category,day:Number(t.day)||0,status:t.status}))},
- listToday(){return tasks.filter(t=>t&&t.title&&Number(t.day)===0&&t.status!=='skipped').map(t=>({id:t.id,title:t.title,when:t.start?clock(t.start):'',start:t.start,duration:t.duration,category:t.category,day:0,status:t.status}))},
+ getTaskSnapshot(){return getWorkspaceTaskSnapshot()},
+ setTaskStatus(id,status){const t=tasks.find(x=>Number(x.id)===Number(id));if(!t)return false;t.status=status;refreshTaskViews();return true},
+ listAll(){return getWorkspaceTaskSnapshot().allActive},
+ listToday(){return getWorkspaceTaskSnapshot().todayAll},
  createDirect(spec){const localTask={id:++state.id,title:String(spec.title||'New task').trim(),category:spec.category||'study',duration:Number(spec.duration)||60,start:spec.start||'09:00',status:'planned',day:Number(spec.day)||0,detail:spec.detail||''};tasks.push(localTask);refreshTaskViews();return localTask},
  move(id,updates={}){const t=tasks.find(x=>Number(x.id)===Number(id));if(!t)return null;const prev={id:t.id,title:t.title,day:t.day,start:t.start,when:t.start?clock(t.start):''};if(updates.day!==undefined)t.day=Number(updates.day);if(updates.start)t.start=String(updates.start);if(updates.deltaMinutes){const m=Math.max(0,Math.min(1435,mins(t.start||'09:00')+Number(updates.deltaMinutes)));t.start=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}refreshTaskViews();return {prev,current:{id:t.id,title:t.title,day:t.day,start:t.start,when:t.start?clock(t.start):''}}},
  getWorkspaces(){return orbitWorkspaces.map(w=>({id:w.id,name:w.name,role:w.role}))},
@@ -933,4 +1098,7 @@ window.v3gamLiveAgent={
  }
 };
 renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderBars();renderDashboard();
+if(typeof window!=="undefined"&&new URLSearchParams(window.location.search||window.location.hash.replace(/^#\??/,"")).get("test")==="1"){
+ const ts=document.createElement("script");ts.src="./browser_test_suite.js";ts.defer=true;document.body.appendChild(ts);
+}
 })();
