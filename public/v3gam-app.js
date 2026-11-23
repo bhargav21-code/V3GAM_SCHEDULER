@@ -1148,7 +1148,7 @@ window.v3gamTaskTools={
   const i=tasks.indexOf(t);if(i>=0)tasks.splice(i,1);refreshTaskViews();return true}
 };
 window.v3gamLiveAgent={
- isReady:()=>!!(orbitSessionActive&&!orbitDemoMode),
+ isReady:()=>!!(orbitSessionActive||orbitDemoMode),
  getLang:()=>orbitVoiceLang||'en-IN',
  speak:(text)=>speakV3GAM(text),
  toast:(msg)=>toast(msg),
