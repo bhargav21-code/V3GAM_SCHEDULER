@@ -287,27 +287,30 @@
 
   const CAT_WORDS = {
     study: "study", studying: "study", exam: "study", gate: "study", revision: "study", homework: "study", reading: "study", chapter: "study", flashcards: "study", math: "study", maths: "study", physics: "study", chemistry: "study", quiz: "study", ada: "study", electives: "study", syllabus: "study",
-    lab: "lab", coding: "lab", code: "lab", project: "lab", projects: "lab", assignment: "lab", practical: "lab", report: "lab", review: "lab", sprint: "lab", debug: "lab", deploy: "lab",
+    lab: "lab", coding: "lab", code: "lab", project: "lab", projects: "lab", assignment: "lab", practical: "lab", report: "lab", sprint: "lab", debug: "lab", deploy: "lab", test: "lab", tests: "lab",
     lecture: "lecture", class: "lecture", classes: "lecture", seminar: "lecture", tutorial: "lecture", workshop: "lecture", webinar: "lecture", tuition: "lecture",
-    gym: "gym", workout: "gym", exercise: "gym", wellness: "gym", fitness: "gym", dentist: "gym", doctor: "gym", clinic: "gym", checkup: "gym", health: "gym", meditation: "gym", yoga: "gym", run: "gym", running: "gym", walk: "gym", walking: "gym", swim: "gym", shower: "gym", sleep: "gym", nap: "gym", therapy: "gym",
+    gym: "gym", workout: "gym", exercise: "gym", wellness: "gym", fitness: "gym", dentist: "gym", doctor: "gym", clinic: "gym", checkup: "gym", health: "gym", meditation: "gym", yoga: "gym", walking: "gym", swim: "gym", shower: "gym", sleep: "gym", nap: "gym", therapy: "gym",
     meal: "meal", meals: "meal", food: "meal", lunch: "meal", dinner: "meal", breakfast: "meal", brunch: "meal", snack: "meal", coffee: "meal", tea: "meal", cook: "meal", cooking: "meal", bake: "meal", mil: "meal", mill: "meal",
-    personal: "personal", other: "personal", laundry: "personal", chore: "personal", chores: "personal", clean: "personal", cleaning: "personal", errand: "personal", errands: "personal", movie: "personal", hostel: "personal", trip: "personal", packing: "personal", organize: "personal", groceries: "personal", grocery: "personal", bill: "personal", bills: "personal", birthday: "personal", party: "personal", mom: "personal", dad: "personal", family: "personal", shopping: "personal"
+    personal: "personal", other: "personal", laundry: "personal", chore: "personal", chores: "personal", cleaning: "personal", errand: "personal", errands: "personal", movie: "personal", hostel: "personal", trip: "personal", packing: "personal", organize: "personal", groceries: "personal", grocery: "personal", bill: "personal", bills: "personal", birthday: "personal", party: "personal", mom: "personal", dad: "personal", family: "personal", shopping: "personal"
   };
   const CAT_GENERIC_WEIGHTS = {
+    run: { cat: "gym", weight: 1 },
+    walk: { cat: "gym", weight: 1 },
+    call: { cat: "personal", weight: 1 },
+    clean: { cat: "personal", weight: 1 },
+    review: { cat: "lab", weight: 1 },
+    book: { cat: "personal", weight: 1 },
     meeting: { cat: "personal", weight: 1 },
     planning: { cat: "personal", weight: 1 },
     appointment: { cat: "personal", weight: 1 },
-    call: { cat: "personal", weight: 1 },
-    clean: { cat: "personal", weight: 1 },
     trip: { cat: "personal", weight: 1 },
     organize: { cat: "personal", weight: 1 },
-    review: { cat: "lab", weight: 2 },
     report: { cat: "lab", weight: 2 }
   };
   const CAT_COMPOUND_RULES = [
     { re: /\b(?:clean\s+code|code\s+review|progress\s+report|lab\s+report|project\s+review|pull\s+request|bug\s+fix|system\s+design)\b/i, cat: "lab" },
     { re: /\b(?:case\s+study|paper\s+reading|problem\s+set|choice\s+of\s+electives|exam\s+prep|gate\s+prep)\b/i, cat: "study" },
-    { re: /\b(?:dentist\s+appointment|doctor\s+appointment|cold\s+shower|gym\s+meeting|gym\s+session|morning\s+run)\b/i, cat: "gym" },
+    { re: /\b(?:dentist\s+appointment|doctor\s+appointment|cold\s+shower|gym\s+meeting|gym\s+session|morning\s+run|running)\b/i, cat: "gym" },
     { re: /\b(?:lunch\s+meeting|lunch\s+break|dinner\s+meeting|breakfast\s+reset|coffee\s+break)\b/i, cat: "meal" },
     { re: /\b(?:hostel\s+meeting|movie\s+planning|trip\s+planning|family\s+trip|pay\s+.*bill|birthday\s+party|call\s+mom)\b/i, cat: "personal" }
   ];
@@ -2365,6 +2368,7 @@
   ]);
   const V102_INVISIBLE_RE = /[\u0000-\u001F\u007F-\u009F\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u200B-\u200F\u202A-\u202E\u2060-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0]/g;
 
+  const LEARN_WINDOW_MS = 45000;
   const privateHardwareSpeechStamps = new Map();
   const NATIVE_EVENT_TRUSTED_GETTER = (() => {
     try {
@@ -2408,6 +2412,7 @@
       this.TTL_MS = 30 * 24 * 60 * 60 * 1000;
       this.CANDIDATE_TTL_MS = 24 * 60 * 60 * 1000;
       this.QUARANTINE_MS = 24 * 60 * 60 * 1000;
+      this.LEARN_WINDOW_MS = LEARN_WINDOW_MS;
       this.MIN_CORRECTION_GAP_MS = 5000;
       this.TTS_ECHO_COOLDOWN_MS = 900;
       this.enabled = true;
@@ -2416,6 +2421,7 @@
       this.quarantineMap = new Map();
       this.auditLog = [];
       this.lastAdaptedExecution = null;
+      this.pendingLearnConsent = null;
       this._lastHardwareTtsActiveAt = 0;
       this.setUser(userId);
     }
@@ -2464,7 +2470,7 @@
         return true;
       }
       const stampedAt = privateHardwareSpeechStamps.get(normPhrase);
-      if (typeof stampedAt === "number" && (now - stampedAt) >= 0 && (now - stampedAt) <= 15000) {
+      if (typeof stampedAt === "number" && (now - stampedAt) >= 0 && (now - stampedAt) <= LEARN_WINDOW_MS) {
         return true;
       }
       return false;
@@ -2475,6 +2481,7 @@
       this.learnedMap.clear();
       this.quarantineMap.clear();
       this.lastAdaptedExecution = null;
+      this.pendingLearnConsent = null;
       const trimmed = typeof userId === 'string' ? userId.replace(V102_INVISIBLE_RE, '').trim() : '';
       if (!trimmed || trimmed.length < 2 || /^(?:default|anonymous|anon|guest|null|undefined|none|public|shared)$/i.test(trimmed)) {
         this.userId = null;
@@ -2495,6 +2502,7 @@
       this.quarantineMap.clear();
       privateHardwareSpeechStamps.clear();
       this.lastAdaptedExecution = null;
+      this.pendingLearnConsent = null;
       this.userId = null;
       this.isAuthenticatedUser = false;
       this.storageKey = null;
@@ -2633,21 +2641,51 @@
       if (this.candidates.has(key)) this.candidates.delete(key);
       this.candidates.set(key, updated);
       if (updated.count >= 2 && !(context && context.undoneWithin15s)) {
-        if (this.learnedMap.size >= this.MAX_ENTRIES && !this.learnedMap.has(norm)) {
-          this.learnedMap.delete(this.learnedMap.keys().next().value);
-        }
-        if (this.learnedMap.has(norm)) this.learnedMap.delete(norm);
-        this.learnedMap.set(norm, {
+        const label = V102_TARGET_LABELS[succeededTarget] || succeededTarget;
+        const cleanRaw = String(failedPhrase || "").replace(V102_INVISIBLE_RE, "").trim();
+        const prompt = "Want me to remember '" + cleanRaw + "' as '" + label + "'? Say yes.";
+        this.pendingLearnConsent = {
+          norm,
+          rawPhrase: cleanRaw,
           target: succeededTarget,
+          label,
           confidence: Math.min(0.95, 0.70 + updated.count * 0.1),
-          failStreak: 0,
-          lastUsedAt: now,
-          expiresAt: now + this.TTL_MS
-        });
-        this._saveToStorage();
-        return { learned: true, promoted: true, target: succeededTarget };
+          at: now,
+          expiresAt: now + LEARN_WINDOW_MS,
+          prompt
+        };
+        return { learned: false, awaitingConsent: true, target: succeededTarget, label, prompt };
       }
       return { learned: false, staged: true, count: updated.count };
+    }
+
+    confirmPendingLearn(now = Date.now()) {
+      const p = this.pendingLearnConsent;
+      this.pendingLearnConsent = null;
+      if (!p || !this.enabled || !this.isAuthenticatedUser || !this.userId) return null;
+      if ((now - p.at) < 0 || (now - p.at) > LEARN_WINDOW_MS || now > p.expiresAt) return null;
+      if (this.validatePhraseAndTarget(p.norm, p.target) !== null) return null;
+      const qUntil = this.quarantineMap.get(p.norm);
+      if (typeof qUntil === "number" && now < qUntil) return null;
+      if (this.learnedMap.size >= this.MAX_ENTRIES && !this.learnedMap.has(p.norm)) {
+        this.learnedMap.delete(this.learnedMap.keys().next().value);
+      }
+      if (this.learnedMap.has(p.norm)) this.learnedMap.delete(p.norm);
+      this.learnedMap.set(p.norm, {
+        target: p.target,
+        confidence: p.confidence,
+        failStreak: 0,
+        lastUsedAt: now,
+        expiresAt: now + this.TTL_MS
+      });
+      this._saveToStorage();
+      return { learned: true, promoted: true, target: p.target, rawPhrase: p.rawPhrase, label: p.label };
+    }
+
+    cancelPendingLearn() {
+      const p = this.pendingLearnConsent;
+      this.pendingLearnConsent = null;
+      return p;
     }
 
     recordOutcome(phrase, wasUndoneOrRejected, now = Date.now()) {
@@ -2730,6 +2768,7 @@
       this.candidates.clear();
       this.learnedMap.clear();
       this.quarantineMap.clear();
+      this.pendingLearnConsent = null;
       this._saveToStorage();
       return { ok: true, reply: 'Cleared all learned voice phrase aliases.' };
     }
@@ -3077,6 +3116,31 @@
     const normUtterance = layer ? layer.normalizePhrase(rawTrim) : "";
     const hasHardwareMicStamp = Boolean(layer && normUtterance && layer._hasVerifiedHardwareMicEvent(normUtterance, options, now));
 
+    if (layer && layer.pendingLearnConsent) {
+      if ((now - layer.pendingLearnConsent.at) > LEARN_WINDOW_MS || now > layer.pendingLearnConsent.expiresAt) {
+        layer.cancelPendingLearn();
+      } else if (/^(?:yes|yeah|yep|yup|sure|confirm|ok|okay)$/i.test(rawTrim)) {
+        const saved = layer.confirmPendingLearn(now);
+        if (saved) {
+          return {
+            ok: true,
+            command: "confirm_adaptive_learn",
+            reply: "Saved '" + saved.rawPhrase + "' as '" + saved.label + "'.",
+            adaptiveLearning: saved
+          };
+        }
+      } else if (/^(?:no|nope|nah|cancel|don't|do not|never mind|nevermind)$/i.test(rawTrim)) {
+        const cancelled = layer.cancelPendingLearn();
+        return {
+          ok: true,
+          command: "cancel_adaptive_learn",
+          reply: "Okay, I won't save '" + (cancelled ? cancelled.rawPhrase : rawTrim) + "'.",
+          adaptiveLearning: { learned: false, cancelled: true, reason: "cancelled_by_user" }
+        };
+      } else {
+        layer.cancelPendingLearn();
+      }
+    }
     if (/^(?:try\s+again|retry(?:\s+that)?)$/i.test(rawTrim) && lastFailedCommandText) {
       const toRetry = lastFailedCommandText;
       lastFailedCommandText = "";
@@ -3101,7 +3165,7 @@
       const canonicalTarget = deriveAdaptiveTargetFromCommand(cmd.command, cmd.args || {});
       const prevFail = pendingFailedAdaptiveTurn;
       pendingFailedAdaptiveTurn = null;
-      if (canonicalTarget && (now - prevFail.at) >= 0 && (now - prevFail.at) <= 45000) {
+      if (canonicalTarget && (now - prevFail.at) >= 0 && (now - prevFail.at) <= LEARN_WINDOW_MS) {
         turnLearningResult = layer.recordCorrection(
           prevFail.rawPhrase,
           canonicalTarget,
@@ -3110,6 +3174,10 @@
             now
           }
         );
+        if (turnLearningResult && turnLearningResult.awaitingConsent && turnLearningResult.prompt) {
+          r.reply = (r.reply ? r.reply + " " : "") + turnLearningResult.prompt;
+          r.pillTitle = "CONFIRM ACTION";
+        }
       }
     }
     if (r.pillTitle || !r.ok) {
@@ -3163,6 +3231,11 @@
     tryText,
     hint,
     noteAdded: (title) => { if (title) flow.lastAdded = { title: String(title) }; },
+    inferTaskCategory,
+    CAT_WORDS,
+    CAT_GENERIC_WEIGHTS,
+    CAT_COMPOUND_RULES,
+    LEARN_WINDOW_MS,
     commands: Object.keys(COMMANDS),
     __brain: true
   };

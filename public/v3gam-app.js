@@ -16,7 +16,7 @@ const demoTasks=[
 {id:9,title:'Lab report buffer',category:'lab',start:'20:15',duration:30,status:'planned',day:0,detail:'Small finishing touches only, no pressure.'}
 ];
 let tasks=[];
-let orbitDemoMode=false, orbitRealTaskSnapshot=[], orbitWorkspaces=[], orbitWorkspaceId=null, orbitSessionActive=false, orbitUserId='', orbitUserEmail='', orbitDisplayName='';
+let orbitBootstrapInFlight=false, pendingBackendProposal=null, orbitDemoMode=false, orbitRealTaskSnapshot=[], orbitWorkspaces=[], orbitWorkspaceId=null, orbitSessionActive=false, orbitUserId='', orbitUserEmail='', orbitDisplayName='';
 let orbitReminderInterval=null,orbitReminderPollBusy=false,orbitNotificationCache=[],orbitNotificationFilter='all';
 let orbitElevenLabsEnabled=false, orbitVoiceTtsEnabled=true, orbitVoiceLang='en-IN';
 function orbitUpdateElevenLabsAvailability(){const widget=$('#orbitElevenLabsWidget');if(widget)widget.style.display=(orbitSessionActive&&!orbitDemoMode&&orbitElevenLabsEnabled)?'block':'none';}
@@ -54,7 +54,7 @@ async function orbitLoadNotifications(){
   const unread=orbitNotificationCache.filter(n=>!n.read_at).length,badge=$('#notificationUnread');
   badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0;
   orbitRenderNotificationRows();
- }catch(err){host.innerHTML='<div class="workspace-page-empty"><b>Could not load notifications</b>'+esc(err.message||'Please try again.')+'</div>'}
+ }catch(err){host.innerHTML='<div class="workspace-page-empty"><b>Could not load notifications</b>'+esc(err.message||'Please try again.')+'</div>';if(orbitBootstrapInFlight)throw err;}
 }
 function orbitOpenNotifications(){ $('#notificationsDialog').classList.add('open');$('#notificationsDialog').setAttribute('aria-hidden','false');orbitLoadNotifications(); }
 function orbitCloseNotifications(){ $('#notificationsDialog').classList.remove('open');$('#notificationsDialog').setAttribute('aria-hidden','true'); }
@@ -157,7 +157,7 @@ $('#todayLabel').textContent=days[date.getDay()].toUpperCase()+' · '+date.toLoc
 $('#themeToggle').addEventListener('click',()=>{state.theme=state.theme==='dark'?'light':'dark';$('#app').classList.toggle('light',state.theme==='light');$('#themeToggle').textContent=state.theme==='light'?'☾':'☼';$('#themeToggle').setAttribute('aria-label',state.theme==='light'?'Switch to dark theme':'Switch to light theme');toast(state.theme==='light'?'Light theme enabled':'Dark theme enabled')});
 function fitLaptopPreview(){const scale=Math.min(1,Math.max(.5,(window.innerHeight-48)/844));document.documentElement.style.setProperty('--preview-scale',String(scale))}window.addEventListener('resize',fitLaptopPreview);fitLaptopPreview();
 function getWorkspaceTaskSnapshot(){
- const mapTask=t=>({id:t.id,title:t.title,when:t.start?clock(t.start):"",start:t.start||"09:00",duration:Number(t.duration)||60,category:t.category||"study",day:Number(t.day)||0,status:t.status||"planned",detail:t.detail||""});
+ const mapTask=t=>({id:t.id,title:t.title,when:t.start?clock(t.start):"",start:t.start||"09:00",duration:Number(t.duration)||60,category:['study','lab','lecture','gym','meal','personal'].includes(String(t.category||'').toLowerCase())?String(t.category).toLowerCase():'personal',day:Number(t.day)||0,status:t.status||"planned",detail:t.detail||""});
  const allActive=tasks.filter(t=>t&&t.title&&t.status!=="skipped");
  const todayRaw=allActive.filter(t=>Number(t.day)===0).slice().sort((a,b)=>mins(a.start||"09:00")-mins(b.start||"09:00"));
  const todayAll=todayRaw.map(mapTask);
@@ -189,7 +189,7 @@ let now=false;
 today.forEach(t=>{
 if(!now&&mins(t.start)>=600){const r=document.createElement('div');r.className='now';r.innerHTML='<i class="dot"></i> A good time for deep work';el.appendChild(r);now=true}
 const row=document.createElement('div');row.className='time-row';const dur=t.duration>=60?(t.duration%60?Math.floor(t.duration/60)+'.5h':t.duration/60+'h'):t.duration+'m';
-row.innerHTML='<div class="time-label">'+clock(t.start)+'</div><div class="time-content"><div class="task '+classes[t.category]+(t.status==='done'?' completed':'')+'"><button type="button" class="task-check '+(t.status==='done'?'checked':'')+'" data-toggle-task="'+t.id+'" aria-label="'+(t.status==='done'?'Mark incomplete':'Mark done')+'" aria-pressed="'+(t.status==='done')+'">'+(t.status==='done'?'✓':'')+'</button><button type="button" class="task-open" data-task="'+t.id+'"><i class="mark"></i><div class="taskmain"><div class="tasktitle">'+esc(t.title)+'</div><div class="taskmeta">'+names[t.category]+' · '+(t.status==='done'?'Completed':t.status==='active'?'In progress':'Smart scheduled')+'</div></div><span class="duration">'+dur+'</span></button></div></div>';el.appendChild(row)
+row.innerHTML='<div class="time-label">'+clock(t.start)+'</div><div class="time-content"><div class="task '+(classes[t.category]||classes.personal)+(t.status==='done'?' completed':'')+'"><button type="button" class="task-check '+(t.status==='done'?'checked':'')+'" data-toggle-task="'+t.id+'" aria-label="'+(t.status==='done'?'Mark incomplete':'Mark done')+'" aria-pressed="'+(t.status==='done')+'">'+(t.status==='done'?'✓':'')+'</button><button type="button" class="task-open" data-task="'+t.id+'"><i class="mark"></i><div class="taskmain"><div class="tasktitle">'+esc(t.title)+'</div><div class="taskmeta">'+esc(names[t.category]||names.personal)+' · '+(t.status==='done'?'Completed':t.status==='active'?'In progress':'Smart scheduled')+'</div></div><span class="duration">'+dur+'</span></button></div></div>';el.appendChild(row)
 });
 if(!now){const n=document.createElement('div');n.className='now';n.innerHTML='<i class="dot"></i> Keep your momentum';el.appendChild(n)}
 const done=snap.todayDoneCount,left=snap.todayRemainingCount,total=snap.totalMinutesToday;
@@ -216,7 +216,7 @@ async function orbitToggleTaskDone(id){
 $('#timeline').addEventListener('click',e=>{const check=e.target.closest('[data-toggle-task]');if(check){e.preventDefault();e.stopPropagation();orbitToggleTaskDone(check.dataset.toggleTask);return}const b=e.target.closest('.task-open[data-task]');if(b)openFocus(Number(b.dataset.task))});
 // Move the existing live checklist into the redesigned dashboard card; keep its element, IDs and event listeners intact.
 $('#dashboardTimelineMount').appendChild($('#timeline'));$('#timeline').classList.add('dashboard-home-timeline');
-function openFocus(id){const t=tasks.find(x=>x.id===id);if(!t)return;state.focused=id;$('#focusIcon').textContent=icons[t.category]||'✦';$('#focusCategory').textContent=names[t.category].toUpperCase()+' · '+t.duration+' MIN';$('#focusTitle').textContent=t.title;$('#focusMeta').textContent=t.detail||'One thing at a time. You have got this.';$('#focusIndex').textContent='TASK '+String(id).padStart(2,'0');state.focusEnd=Date.now()+t.duration*60000;clearInterval(state.focusTicker);function tickFocus(){const left=Math.max(0,state.focusEnd-Date.now());const sec=Math.floor(left/1000);$('#countdown').textContent=String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');$('#focusTimerProgress').style.width=(t.status==='done'?100:Math.max(0,Math.min(100,(1-left/(t.duration*60000))*100)))+'%';if(left===0)clearInterval(state.focusTicker)}tickFocus();state.focusTicker=setInterval(tickFocus,1000);$('#focusOverlay').classList.add('open');$('#focusOverlay').setAttribute('aria-hidden','false')}
+function openFocus(id){const t=tasks.find(x=>x.id===id);if(!t)return;state.focused=id;$('#focusIcon').textContent=icons[t.category]||'✦';$('#focusCategory').textContent=esc(names[t.category]||names.personal).toUpperCase()+' · '+t.duration+' MIN';$('#focusTitle').textContent=t.title;$('#focusMeta').textContent=t.detail||'One thing at a time. You have got this.';$('#focusIndex').textContent='TASK '+String(id).padStart(2,'0');state.focusEnd=Date.now()+t.duration*60000;clearInterval(state.focusTicker);function tickFocus(){const left=Math.max(0,state.focusEnd-Date.now());const sec=Math.floor(left/1000);$('#countdown').textContent=String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');$('#focusTimerProgress').style.width=(t.status==='done'?100:Math.max(0,Math.min(100,(1-left/(t.duration*60000))*100)))+'%';if(left===0)clearInterval(state.focusTicker)}tickFocus();state.focusTicker=setInterval(tickFocus,1000);$('#focusOverlay').classList.add('open');$('#focusOverlay').setAttribute('aria-hidden','false')}
 function close(id){$( '#'+id).classList.remove('open');$('#'+id).setAttribute('aria-hidden','true')}
 $('#closeFocus').addEventListener('click',()=>close('focusOverlay'));$('#focusMore').addEventListener('click',()=>toast('Task options · coming next'));
 function celebrateTask(id){const target=$('[data-task="'+id+'"]');if(!target)return;target.classList.add('rewarded');const appRect=$('#app').getBoundingClientRect(),r=target.getBoundingClientRect();['✦','✧','＋','✦','•','✧'].forEach((glyph,i)=>{const p=document.createElement('span');p.className='reward-spark';p.textContent=glyph;p.style.left=(r.left+r.width*(.25+.1*i)-appRect.left)+'px';p.style.top=(r.top+r.height*.45-appRect.top)+'px';p.style.setProperty('--dx',((i-2.5)*11)+'px');p.style.setProperty('--rot',((i-2.5)*18)+'deg');$('#app').appendChild(p);setTimeout(()=>p.remove(),900)})}
@@ -234,7 +234,7 @@ function orbitSyncWhenChoice(){
 $$('[data-when-pick]').forEach(button=>button.addEventListener('click',()=>{$('#taskWhen').value=button.dataset.whenPick;$('#taskWhen').dispatchEvent(new Event('change',{bubbles:true}));}));
 $('#taskWhenPreset').addEventListener('change',()=>{if($('#taskWhenPreset').value){$('#taskWhen').value=$('#taskWhenPreset').value;$('#taskWhen').dispatchEvent(new Event('change',{bubbles:true}));}else{$('#taskWhen').value='flexible';$('#taskWhen').dispatchEvent(new Event('change',{bubbles:true}));}});
 orbitSyncWhenChoice();
-function showParsed(){const title=$('#taskName').value.trim();if(!title){$('#taskName').focus();return}const pref=$('#taskWhen').value;if(pref==='manual'&&!$('#taskManualTime').value){$('#taskManualTime').focus();toast('Choose the time for this task first.');return}const task={title,category:$('#taskCategory').value,duration:Number($('#taskDuration').value),pref,slot:taskSlot(pref,state.pendingDayOffset||0),detail:$('#taskNote').value.trim()};state.pending=task;$('#parsedTitle').textContent=title;$('#parsedText').textContent=task.duration+' minutes · '+names[task.category]+' · '+(pref==='manual'?'Your chosen time: ': 'Suggested for ')+clock(task.slot)+'. '+(pref==='manual'?'This task will be saved at your selected time.':pref==='flexible'?'Placed in a flexible gap.':'Matched your preferred time.');$('#parsedCard').classList.add('show');$('#parsedCard').scrollIntoView({behavior:'smooth',block:'nearest'})}
+function showParsed(){const title=$('#taskName').value.trim();if(!title){$('#taskName').focus();return}const pref=$('#taskWhen').value;if(pref==='manual'&&!$('#taskManualTime').value){$('#taskManualTime').focus();toast('Choose the time for this task first.');return}const task={title,category:$('#taskCategory').value,duration:Number($('#taskDuration').value),pref,slot:taskSlot(pref,state.pendingDayOffset||0),detail:$('#taskNote').value.trim()};state.pending=task;$('#parsedTitle').textContent=title;$('#parsedText').textContent=task.duration+' minutes · '+esc(names[task.category]||names.personal)+' · '+(pref==='manual'?'Your chosen time: ': 'Suggested for ')+clock(task.slot)+'. '+(pref==='manual'?'This task will be saved at your selected time.':pref==='flexible'?'Placed in a flexible gap.':'Matched your preferred time.');$('#parsedCard').classList.add('show');$('#parsedCard').scrollIntoView({behavior:'smooth',block:'nearest'})}
 $('#taskForm').addEventListener('submit',e=>{e.preventDefault();showParsed()});
 $('#confirmTaskBtn').addEventListener('click',async()=>{if(!state.pending)return;const p=state.pending,targetOffset=state.pendingDayOffset||0,localTask={id:++state.id,title:p.title,category:p.category,duration:p.duration,start:p.slot,status:'planned',day:targetOffset,detail:p.detail};try{if(!orbitDemoMode){const {data:{session}}=await window.orbitSupabase.auth.getSession();if(session&&session.user){const date=new Date();date.setDate(date.getDate()+targetOffset);const due_date=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');const response=await orbitAuthorizedFetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:p.title,category:p.category,duration_minutes:p.duration,due_date,starts_at:new Date(due_date+'T'+p.slot+':00').toISOString(),detail:p.detail,source:'manual',...(orbitWorkspaceId!==null?{workspace_id:orbitWorkspaceId}:{})})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not save task');localTask.serverId=data.task.id;localTask.id=Number(data.task.id)||localTask.id}}}catch(e){toast('Could not sync to account: '+e.message);return}tasks.push(localTask);state.pending=null;state.pendingDayOffset=0;$('#taskForm').reset();$('#manualTimeField').style.display='none';$('#taskManualTime').required=false;$('#parsedCard').classList.remove('show');renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderDashboard();go(targetOffset===0?'home':'plan');toast('Added to your plan · V3GAM found a slot ✦')});
 function stopRecord(){state.recording=false;clearTimeout(state.tm);$('#recordTaskBtn').classList.remove('recording');$('#recordLabel').textContent='Describe it with your voice';$('#agentBtn').classList.remove('listening');if(state.rec){try{state.rec.stop()}catch(e){}state.rec=null}}
@@ -276,7 +276,7 @@ function renderSelectedDayTasks(){
  const items=tasksForDate(selectedPlanDate);summary.textContent=items.length?items.length+' task'+(items.length===1?'':'s')+' on this day · '+items.reduce((n,t)=>n+t.duration,0)+' scheduled minutes':'No tasks are scheduled for this date yet.';
  list.innerHTML='';
  if(!items.length){list.innerHTML='<div class="selected-day-empty"><b>Nothing planned here yet</b>This date is open. Add a task whenever you are ready.</div>';return}
- items.forEach(t=>{const row=document.createElement('div');row.className='selected-task-row';const check=document.createElement('button');check.type='button';check.className='task-check '+(t.status==='done'?'checked':'');check.textContent=t.status==='done'?'✓':'';check.dataset.toggleTask=String(t.id);check.setAttribute('aria-label',t.status==='done'?'Mark incomplete':'Mark done');check.setAttribute('aria-pressed',String(t.status==='done'));const open=document.createElement('button');open.type='button';open.className='selected-task-open';open.dataset.task=String(t.id);open.innerHTML='<span class="selected-task-time">'+clock(t.start)+'</span><span class="selected-task-info"><strong>'+esc(t.title)+'</strong><small>'+esc(names[t.category])+' · '+t.duration+' minutes</small></span><span class="selected-task-state '+(t.status==='done'?'done':'')+'">'+(t.status==='done'?'✓ Done':t.status==='active'?'In progress':'Planned')+'</span>';row.append(check,open);list.appendChild(row)})
+ items.forEach(t=>{const row=document.createElement('div');row.className='selected-task-row';const check=document.createElement('button');check.type='button';check.className='task-check '+(t.status==='done'?'checked':'');check.textContent=t.status==='done'?'✓':'';check.dataset.toggleTask=String(t.id);check.setAttribute('aria-label',t.status==='done'?'Mark incomplete':'Mark done');check.setAttribute('aria-pressed',String(t.status==='done'));const open=document.createElement('button');open.type='button';open.className='selected-task-open';open.dataset.task=String(t.id);open.innerHTML='<span class="selected-task-time">'+clock(t.start)+'</span><span class="selected-task-info"><strong>'+esc(t.title)+'</strong><small>'+esc(names[t.category]||names.personal)+' · '+t.duration+' minutes</small></span><span class="selected-task-state '+(t.status==='done'?'done':'')+'">'+(t.status==='done'?'✓ Done':t.status==='active'?'In progress':'Planned')+'</span>';row.append(check,open);list.appendChild(row)})
 }
 function renderHabitMatrix(){
  const matrix=$('#habitMatrix'),groups=$('#habitWeekGroups');if(!matrix||!groups)return;
@@ -352,7 +352,7 @@ function renderDashboard(){
  $('#dashboardWeekHeader').innerHTML='';$('#dashboardCalendar').innerHTML='';
  const q=dashboardFilter.trim().toLowerCase();
  const cats={study:'study',lecture:'lecture',meal:'meal',gym:'gym',lab:'lab',personal:'meal'};
- const allMatch=tasks.filter(t=>t.status!=='skipped'&&(!q||(t.title+' '+names[t.category]+' '+t.detail).toLowerCase().includes(q)));
+ const allMatch=tasks.filter(t=>t.status!=='skipped'&&(!q||(t.title+' '+esc(names[t.category]||names.personal)+' '+t.detail).toLowerCase().includes(q)));
  for(let i=0;i<7;i++){
   const d=new Date(start);d.setDate(start.getDate()+i);
   const iso=d.toDateString(),isToday=iso===date.toDateString();
@@ -593,7 +593,7 @@ async function orbitLoadWorkspaces(){
   if(!response.ok)throw new Error(data.error||'Could not load workspaces');
   orbitWorkspaces=Array.isArray(data.workspaces)?data.workspaces:[];
   orbitRenderWorkspaceMenuItems();
- }catch(e){toast('Could not load group workspaces: '+e.message)}
+ }catch(e){toast('Could not load group workspaces: '+e.message);if(orbitBootstrapInFlight)throw e;}
 }
 async function orbitSelectWorkspace(id,name,navigate=true){
  orbitWorkspaceId=id===null?null:Number(id);
@@ -785,12 +785,62 @@ if($('#agentElevenToggle'))$('#agentElevenToggle').addEventListener('click',()=>
 });
 function assistantAddTask(raw){let title=raw.replace(/^(please\s+)?(orbit[,: ]*)?(can you\s+)?(add|create|schedule|plan|remind me to|put)\s+(me\s+)?(a\s+)?(new\s+)?(task\s+to\s+|task\s+for\s+|task\s+|to\s+)?/i,'').trim();title=title.replace(/\b(today|for today|tomorrow|for tomorrow)\b/ig,'').replace(/\b(for|in)\s+(30|45|60|90|120)\s*(minutes?|mins?|hours?|hrs?)\b/ig,'').replace(/\b(at|around)\s+\d{1,2}(:\d{2})?\s*(am|pm)?\b/ig,'').replace(/[.!?]+$/,'').trim();if(!title)title='New task';const dm=raw.match(/\b(30|45|60|90|120)\s*(minutes?|mins?|hours?|hrs?)\b/i);let duration=60;if(dm){duration=Number(dm[1]);if(/hours?|hrs?/i.test(dm[2]))duration*=60}let category='study';if(/gym|workout|exercise|walk|run|yoga/i.test(title))category='gym';else if(/lunch|dinner|breakfast|eat|meal/i.test(title))category='meal';else if(/lecture|class|attend/i.test(title))category='lecture';else if(/lab|project|report|assignment|code|build/i.test(title))category='lab';const tm=raw.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);let slot;if(tm){let h=Number(tm[1])%12;if(tm[3].toLowerCase()==='pm')h+=12;slot=String(h).padStart(2,'0')+':'+(tm[2]||'00')}else slot=taskSlot(/morning/i.test(raw)?'morning':/afternoon/i.test(raw)?'afternoon':/evening|tonight/i.test(raw)?'evening':'flexible',0);const day=/\btomorrow\b/i.test(raw)?1:0;const task={id:++state.id,title,category,duration,start:slot,status:'planned',day,detail:'Added by voice assistant'};tasks.push(task);renderTimeline();renderWeek();renderMonth();renderDashboard();bubble('ai','Added "'+task.title+'" to '+(day?'tomorrow':'today')+' at '+clock(slot)+' for '+duration+' minutes.');toast('Task added by voice ✦');return task}
 function startAgentVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){bubble('ai','Voice recognition is not supported in this browser. Try Chrome or Edge, allow microphone access, or type your command below.');return}try{if('speechSynthesis' in window)window.speechSynthesis.cancel();const rec=new SR();rec.lang=orbitVoiceLang||'en-IN';rec.interimResults=false;rec.maxAlternatives=1;$('#agentMic').classList.add('listening');$('#agentMic').textContent='●';$('#agentBtn').classList.add('listening');toast('Listening ('+rec.lang+')… speak now');rec.onresult=e=>{$('#agentInput').value=e.results[0][0].transcript;$('#agentMic').classList.remove('listening');$('#agentMic').textContent='🎙';$('#agentBtn').classList.remove('listening');sendMessage()};rec.onerror=e=>{$('#agentMic').classList.remove('listening');$('#agentMic').textContent='🎙';$('#agentBtn').classList.remove('listening');bubble('ai',e.error==='not-allowed'?'Microphone access is blocked. Allow it in browser settings, then try again.':'I couldn’t hear that clearly. Try again or type your request.')};rec.onend=()=>{$('#agentMic').classList.remove('listening');$('#agentMic').textContent='🎙';$('#agentBtn').classList.remove('listening')};rec.start()}catch(e){$('#agentMic').classList.remove('listening');$('#agentMic').textContent='🎙';$('#agentBtn').classList.remove('listening');bubble('ai','Could not start the microphone. Check browser permissions and try again.')}}
-async function sendAssistantToBackend(message){const _ui=window.v3gamVoiceUi&&window.v3gamVoiceUi.tryText(message);if(_ui){bubble('ai',_ui.reply);toast(_ui.reply);return {ok:_ui.ok,reply:_ui.reply,action:_ui.command,...(_ui.pillTitle?{pillTitle:_ui.pillTitle}:{})}}if(orbitDemoMode){const dt=assistantAddTask(message);return {ok:true,reply:'Added "'+dt.title+'" to your demo schedule.',action:'add_task'}}try{if(!window.orbitSupabase){const m='Account services are still loading. Please try again.';bubble('ai',m);return {ok:false,reply:m}}const {data:{session}}=await window.orbitSupabase.auth.getSession();if(!session||!session.user){orbitAuthPanel.hidden=false;return {ok:false,reply:'Please sign in first.'}}const response=await orbitAuthorizedFetch('/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',workspace_id:orbitWorkspaceId})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Assistant request failed');if(data.task){
+async function sendAssistantToBackend(message){
+ const trimmedMsg=String(message||"").trim();
+ if(pendingBackendProposal){
+  if(/^(?:yes|yeah|yep|yup|sure|confirm|ok|okay|do it|go ahead)$/i.test(trimmedMsg)){
+   const proposalToConfirm=pendingBackendProposal;
+   pendingBackendProposal=null;
+   try{
+    const response=await orbitAuthorizedFetch("/api/assistant",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"confirm",confirm:true,confirm_proposed:proposalToConfirm,proposed:proposalToConfirm,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"Asia/Kolkata",workspace_id:orbitWorkspaceId})});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||"Could not confirm action");
+    if(data.task){
+     const t=data.task,dt=t.starts_at?new Date(t.starts_at):null;
+     const dueText=String(t.due_date||"").slice(0,10);
+     let day=0;
+     if(dueText.length===10&&dueText.charAt(4)==="-"&&dueText.charAt(7)==="-"){const dayDate=new Date(dueText+"T00:00:00");const todayDate=new Date();todayDate.setHours(0,0,0,0);dayDate.setHours(0,0,0,0);day=Math.round((dayDate-todayDate)/86400000);}
+     const normCat=['study','lab','lecture','gym','meal','personal'].includes(String(t.category||"").toLowerCase())?String(t.category).toLowerCase():"personal";
+     const local={id:Number(t.id)||++state.id,title:t.title,category:normCat,duration:Number(t.duration_minutes)||60,start:dt?String(dt.getHours()).padStart(2,"0")+":"+String(dt.getMinutes()).padStart(2,"0"):"11:00",status:t.status||"planned",day,detail:t.detail||"",serverId:t.id};
+     const existingIndex=tasks.findIndex(x=>Number(x.serverId||x.id)===Number(t.id));
+     if(existingIndex>=0)tasks[existingIndex]={...tasks[existingIndex],...local};else tasks.push(local);
+     renderTimeline();renderWeek();renderMonth();renderDashboard();
+     await orbitLoadTasks();
+    }
+    const rep=data.reply||"Confirmed.";
+    bubble("ai",rep);toast(rep);
+    return {ok:true,reply:rep,action:data.action||proposalToConfirm.action,confirmed:true,task:data.task};
+   }catch(e){
+    const errMsg=e.message||"Could not confirm action.";
+    bubble("ai",errMsg);return {ok:false,reply:errMsg};
+   }
+  }
+  if(/^(?:no|nope|nah|cancel|don't|do not|never mind|nevermind)$/i.test(trimmedMsg)){
+   const oldProp=pendingBackendProposal;
+   pendingBackendProposal=null;
+   const cancelReply='Cancelled "'+(oldProp.title||"that action")+'" — no changes were made.';
+   bubble("ai",cancelReply);toast(cancelReply);
+   return {ok:true,reply:cancelReply,action:"cancelled"};
+  }
+  pendingBackendProposal=null;
+ }
+ const _ui=window.v3gamVoiceUi&&window.v3gamVoiceUi.tryText(message);if(_ui){bubble('ai',_ui.reply);toast(_ui.reply);return {ok:_ui.ok,reply:_ui.reply,action:_ui.command,...(_ui.pillTitle?{pillTitle:_ui.pillTitle}:{})}}if(orbitDemoMode){const dt=assistantAddTask(message);return {ok:true,reply:'Added "'+dt.title+'" to your demo schedule.',action:'add_task'}}try{if(!window.orbitSupabase){const m='Account services are still loading. Please try again.';bubble('ai',m);return {ok:false,reply:m}}const {data:{session}}=await window.orbitSupabase.auth.getSession();if(!session||!session.user){orbitAuthPanel.hidden=false;return {ok:false,reply:'Please sign in first.'}}const response=await orbitAuthorizedFetch('/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',workspace_id:orbitWorkspaceId})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Assistant request failed');
+ if(data.action==='confirm'&&data.proposed){
+  pendingBackendProposal=data.proposed;
+  const confirmReply=data.reply||('Confirm action on "'+(data.proposed.title||'task')+'"? Say yes to confirm, or no to cancel.');
+  bubble('ai',confirmReply);toast(confirmReply);
+  const pill=$('#v3gamLiveTranscriptPill'),tEl=$('#v3gamLivePillTitle'),bEl=$('#v3gamLivePillText');
+  if(tEl)tEl.textContent='CONFIRM ACTION';
+  if(bEl)bEl.textContent=confirmReply;
+  if(pill)pill.classList.add('show');
+  return {ok:true,reply:confirmReply,action:'confirm',proposed:data.proposed,pillTitle:'CONFIRM ACTION'};
+ }
+ if(data.task){
  const t=data.task,dt=t.starts_at?new Date(t.starts_at):null;try{window.v3gamVoiceUi&&window.v3gamVoiceUi.noteAdded&&window.v3gamVoiceUi.noteAdded(t.title)}catch(_){}
  const dueText=String(t.due_date||'').slice(0,10);
  let day=0;
  if(dueText.length===10&&dueText.charAt(4)==='-'&&dueText.charAt(7)==='-'){const dayDate=new Date(dueText+'T00:00:00');const todayDate=new Date();todayDate.setHours(0,0,0,0);dayDate.setHours(0,0,0,0);day=Math.round((dayDate-todayDate)/86400000);}
- const local={id:Number(t.id)||++state.id,title:t.title,category:t.category||'study',duration:Number(t.duration_minutes)||60,start:dt?String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'):'11:00',status:t.status||'planned',day,detail:t.detail||'',serverId:t.id};
+ const local={id:Number(t.id)||++state.id,title:t.title,category:['study','lab','lecture','gym','meal','personal'].includes(String(t.category||'').toLowerCase())?String(t.category).toLowerCase():'personal',duration:Number(t.duration_minutes)||60,start:dt?String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'):'11:00',status:t.status||'planned',day,detail:t.detail||'',serverId:t.id};
  const existingIndex=tasks.findIndex(x=>Number(x.serverId||x.id)===Number(t.id));
  if(existingIndex>=0)tasks[existingIndex]={...tasks[existingIndex],...local};else tasks.push(local);
  renderTimeline();renderWeek();renderMonth();renderDashboard();
@@ -882,12 +932,19 @@ async function orbitCompleteSignedInBootstrap(session){
  const demoExit=document.getElementById("demoExitFloating");
  if(demoExit){demoExit.hidden=true;demoExit.classList.remove("visible");}
  orbitAuthNotice("");
- await orbitRestoreWorkspaceSelection();
- await orbitLoadTasks();
- orbitCheckUpcomingReminders();
- orbitLoadNotifications();
- orbitStartReminderPolling();
- go("home");
+ orbitBootstrapInFlight=true;
+ try{
+  await orbitRestoreWorkspaceSelection();
+  await orbitLoadTasks();
+  await orbitLoadNotifications();
+  orbitCheckUpcomingReminders();
+  orbitStartReminderPolling();
+ }catch(err){
+  orbitAuthNotice((err&&err.message)||"Could not load your workspace data.",true);
+ }finally{
+  orbitBootstrapInFlight=false;
+  go("home");
+ }
 }
 window.addEventListener("load",()=>{
  const hash=location.hash||"",query=new URLSearchParams(location.search);
@@ -978,7 +1035,7 @@ document.getElementById("orbitAuthForm").addEventListener("submit",async e=>{
   orbitUpdateElevenLabsAvailability();
   window.orbitSupabase.auth.onAuthStateChange((event,session)=>{
    if(event==="SIGNED_IN"&&session){
-    orbitCompleteSignedInBootstrap(session);
+    setTimeout(()=>{orbitCompleteSignedInBootstrap(session);},0);
    }
    if(event==="SIGNED_OUT"){
     orbitSessionActive=false;window._orbitSignedInBootstrapped=false;
@@ -1022,7 +1079,7 @@ async function orbitLoadTasks(){
   });
   tasks.splice(0,tasks.length,...mapped);state.id=Math.max(state.id,...mapped.map(t=>t.id||0),0);
   renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderDashboard();
- }catch(e){if(!String(e.message||'').includes('sign in'))toast('Could not sync your tasks: '+e.message)}
+ }catch(e){if(!String(e.message||'').includes('sign in'))toast('Could not sync your tasks: '+e.message);if(orbitBootstrapInFlight)throw e;}
 }
 function orbitNavigateFromVoice(view){
  const v=String(view||'today').toLowerCase();
@@ -1075,6 +1132,9 @@ window.v3gamTaskTools={
  },
  find(q){const n=String(q||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(!n)return[];const k=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();const list=tasks.filter(t=>t&&t.title&&t.status!=='skipped');const exact=list.filter(t=>k(t.title)===n);const pool=exact.length?exact:list.filter(t=>{const m=k(t.title);return m.includes(n)||(m.length>=3&&n.includes(m))});return pool.map(t=>{let when='';try{when=t.start?clock(t.start):''}catch(_){}return {id:t.id,title:t.title,when,start:t.start,duration:t.duration,category:t.category,day:t.day,status:t.status,exact:k(t.title)===n}})},
  getTaskSnapshot(){return getWorkspaceTaskSnapshot()},
+ completeSignedInBootstrap(session){return orbitCompleteSignedInBootstrap(session)},
+ sendAssistantToBackend(msg){return sendAssistantToBackend(msg)},
+ getPendingBackendProposal(){return pendingBackendProposal},
  setTaskStatus(id,status){const t=tasks.find(x=>Number(x.id)===Number(id));if(!t)return false;t.status=status;refreshTaskViews();return true},
  listAll(){return getWorkspaceTaskSnapshot().allActive},
  listToday(){return getWorkspaceTaskSnapshot().todayAll},
@@ -1098,7 +1158,5 @@ window.v3gamLiveAgent={
  }
 };
 renderTimeline();renderWeek();renderMonth();renderHabitMatrix();renderBars();renderDashboard();
-if(typeof window!=="undefined"&&new URLSearchParams(window.location.search||window.location.hash.replace(/^#\??/,"")).get("test")==="1"){
- const ts=document.createElement("script");ts.src="./browser_test_suite.js";ts.defer=true;document.body.appendChild(ts);
-}
+
 })();

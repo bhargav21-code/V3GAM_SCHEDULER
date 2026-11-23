@@ -5,6 +5,12 @@ import { canMutateTask, setApiSecurityHeaders, enforceWriteLimit } from '../lib/
 export const access = 'public';
 export const methods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
+export const ALLOWED_CATEGORIES = ['study', 'lab', 'lecture', 'gym', 'meal', 'personal'];
+export function normalizeCategory(v) {
+  const c = typeof v === 'string' ? v.trim().toLowerCase() : '';
+  return ALLOWED_CATEGORIES.includes(c) ? c : 'personal';
+}
+
 function json(res, status, body) { return res.status(status).json(body); }
 function validDate(s) {
   if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
@@ -54,7 +60,7 @@ export default async function (req, res) {
     const duration = Number(b.duration_minutes ?? 60);
     if (!Number.isInteger(duration) || duration < 5 || duration > 1440) return json(res, 400, { error: 'Duration must be 5–1440 minutes.' });
     const status = ['planned','active','done','skipped'].includes(b.status) ? b.status : 'planned';
-    const category = typeof b.category === 'string' ? b.category.slice(0, 40) : 'study';
+    const category = normalizeCategory(b.category);
     const detail = typeof b.detail === 'string' ? b.detail.slice(0, 1000) : '';
     const dueDate = validDate(b.due_date) ? b.due_date : null;
     const startsAt = typeof b.starts_at === 'string' && !Number.isNaN(Date.parse(b.starts_at)) ? new Date(b.starts_at).toISOString() : null;
@@ -95,7 +101,7 @@ export default async function (req, res) {
   const add = (column, value, cast = '') => { values.push(value); allowed.push(column + '=$' + values.length + cast); };
   if (b.title !== undefined) { const v=cleanTitle(b.title); if(!v)return json(res,400,{error:'Task title cannot be empty.'}); add('title',v); }
   if (b.status !== undefined) { if(!['planned','active','done','skipped'].includes(b.status))return json(res,400,{error:'Invalid status.'}); add('status',b.status); }
-  if (b.category !== undefined) add('category',String(b.category).slice(0,40));
+  if (b.category !== undefined) add('category', normalizeCategory(b.category));
   if (b.detail !== undefined) add('detail',String(b.detail).slice(0,1000));
   if (b.duration_minutes !== undefined) { const n=Number(b.duration_minutes);if(!Number.isInteger(n)||n<5||n>1440)return json(res,400,{error:'Invalid duration.'});add('duration_minutes',n); }
   if (b.due_date !== undefined) add('due_date',validDate(b.due_date)?b.due_date:null,'::date');

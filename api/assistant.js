@@ -5,6 +5,12 @@ import { checkRateLimit, respondRateLimited, canMutateTask, setApiSecurityHeader
 export const access = 'public';
 export const methods = ['POST'];
 
+export const ALLOWED_CATEGORIES = ['study', 'lab', 'lecture', 'gym', 'meal', 'personal'];
+export function normalizeCategory(v) {
+  const c = typeof v === 'string' ? v.trim().toLowerCase() : '';
+  return ALLOWED_CATEGORIES.includes(c) ? c : 'personal';
+}
+
 function json(res,status,body){return res.status(status).json(body);}
 function safeTimeZone(value){
   const zone=String(value||'Asia/Kolkata').trim().slice(0,80);
@@ -117,8 +123,6 @@ export default async function(req,res){
   } catch (_) {
     return json(res,503,{error:'AI request protection is temporarily unavailable. Please retry shortly.',retryable:true});
   }
-  const message=String(req.body?.message||'').trim().slice(0,1200);
-  if(!message)return json(res,400,{error:'Message required.'});
   let workspaceId=null;
   if(req.body?.workspace_id!==undefined&&req.body?.workspace_id!==null&&req.body?.workspace_id!==''){
     workspaceId=Number(req.body.workspace_id);
@@ -126,6 +130,65 @@ export default async function(req,res){
     if(!await memberOf(uid,workspaceId))return json(res,403,{error:'You are not a member of this group workspace.'});
   }
   const timezone=safeTimeZone(req.body?.timezone);
+
+  // Confirmed execution path for complete_task, skip_task, snooze_task, and reschedule_task
+  const confirmedProposal = req.body?.confirm_proposed || (req.body?.confirm === true ? req.body?.proposed : null);
+  if (confirmedProposal && typeof confirmedProposal === 'object') {
+    const propAction = String(confirmedProposal.action || '');
+    if (!['complete_task', 'skip_task', 'snooze_task', 'reschedule_task'].includes(propAction)) {
+      return json(res, 400, { error: 'Invalid confirmation action.' });
+    }
+    const id = Number(confirmedProposal.task_id);
+    if (!Number.isSafeInteger(id) || id < 1) {
+      return json(res, 400, { error: 'A valid task id is required.' });
+    }
+    const freshTaskResult = workspaceId !== null
+      ? await db.query('SELECT * FROM orbit_tasks WHERE id=$1 AND workspace_id=$2 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$2 AND m.user_id=$3) LIMIT 1', [id, workspaceId, uid])
+      : await db.query('SELECT * FROM orbit_tasks WHERE id=$1 AND user_id=$2 AND workspace_id IS NULL LIMIT 1', [id, uid]);
+    const currentTask = freshTaskResult.rows[0];
+    if (!currentTask) return json(res, 404, { error: 'Task not found in this workspace.' });
+    const mutationKind = propAction === 'complete_task' ? 'complete' : 'edit';
+    const permission = await canMutateTask(uid, currentTask, workspaceId, mutationKind);
+    if (!permission.allowed) {
+      return json(res, 403, {
+        error: propAction === 'complete_task'
+          ? 'You can complete only tasks you created or tasks assigned to you. Group owners can complete any group task.'
+          : propAction === 'reschedule_task'
+            ? 'You can reschedule only tasks you created. Group owners can reschedule any group task.'
+            : 'You can skip or snooze only tasks you created. Group owners can change any group task.'
+      });
+    }
+    if (propAction === 'reschedule_task') {
+      const dueDate = String(confirmedProposal.due_date || '');
+      const desiredStart = String(confirmedProposal.start_time || '');
+      const startsAt = localDateTimeToIso(dueDate, desiredStart, timezone);
+      if (!startsAt) return json(res, 400, { error: 'Invalid date or time for rescheduling.' });
+      const updated = workspaceId !== null
+        ? await db.query('UPDATE orbit_tasks SET starts_at=$1::timestamptz,due_date=$2::date,updated_at=now() WHERE id=$3 AND workspace_id=$4 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$4 AND m.user_id=$5) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$4 AND (w.owner_id=$5 OR orbit_tasks.user_id=$5)) RETURNING *', [startsAt, dueDate, id, workspaceId, uid])
+        : await db.query('UPDATE orbit_tasks SET starts_at=$1::timestamptz,due_date=$2::date,updated_at=now() WHERE id=$3 AND user_id=$4 AND workspace_id IS NULL RETURNING *', [startsAt, dueDate, id, uid]);
+      if (!updated.rows[0]) return json(res, 404, { error: 'Task not found or could not be moved.' });
+      await db.query('INSERT INTO orbit_notifications(user_id,title,body,kind) VALUES($1,$2,$3,$4)', [uid, 'Task rescheduled', updated.rows[0].title, 'task']);
+      return json(res, 200, { action: 'reschedule_task', confirmed: true, task: updated.rows[0], reply: 'Moved ' + updated.rows[0].title + ' to ' + dueDate + ' at ' + desiredStart + '.' });
+    }
+    if (propAction === 'snooze_task') {
+      const { rows } = workspaceId !== null
+        ? await db.query("UPDATE orbit_tasks SET starts_at=COALESCE(starts_at,now())+interval '10 minutes',updated_at=now() WHERE id=$1 AND workspace_id=$2 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$2 AND m.user_id=$3) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$2 AND (w.owner_id=$3 OR orbit_tasks.user_id=$3)) RETURNING *", [id, workspaceId, uid])
+        : await db.query("UPDATE orbit_tasks SET starts_at=COALESCE(starts_at,now())+interval '10 minutes',updated_at=now() WHERE id=$1 AND user_id=$2 AND workspace_id IS NULL RETURNING *", [id, uid]);
+      return rows[0] ? json(res, 200, { action: 'snooze_task', confirmed: true, task: rows[0], reply: 'Snoozed by 10 minutes.' }) : json(res, 404, { error: 'Task not found.' });
+    }
+    const status = propAction === 'complete_task' ? 'done' : 'skipped';
+    const { rows } = workspaceId !== null
+      ? await db.query(propAction === 'complete_task'
+        ? 'UPDATE orbit_tasks SET status=$1,updated_at=now() WHERE id=$2 AND workspace_id=$3 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$3 AND m.user_id=$4) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$3 AND (w.owner_id=$4 OR orbit_tasks.user_id=$4 OR orbit_tasks.assigned_to_user_id=$4)) RETURNING *'
+        : 'UPDATE orbit_tasks SET status=$1,updated_at=now() WHERE id=$2 AND workspace_id=$3 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$3 AND m.user_id=$4) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$3 AND (w.owner_id=$4 OR orbit_tasks.user_id=$4)) RETURNING *', [status, id, workspaceId, uid])
+      : await db.query('UPDATE orbit_tasks SET status=$1,updated_at=now() WHERE id=$2 AND user_id=$3 AND workspace_id IS NULL RETURNING *', [status, id, uid]);
+    if (!rows[0]) return json(res, 404, { error: 'Task not found.' });
+    await db.query('INSERT INTO orbit_notifications(user_id,title,body,kind) VALUES($1,$2,$3,$4)', [uid, status === 'done' ? 'Task completed' : 'Task skipped', rows[0].title, 'task']);
+    return json(res, 200, { action: propAction, confirmed: true, task: rows[0], reply: (status === 'done' ? 'Marked "' : 'Skipped "') + rows[0].title + (status === 'done' ? '" complete.' : '".') });
+  }
+
+  const message=String(req.body?.message||'').trim().slice(0,1200);
+  if(!message)return json(res,400,{error:'Message required.'});
   const now=new Date(),todayLocal=localDateString(now,timezone),nowParts=zonedParts(now,timezone);
   const localClock=String(nowParts.hour).padStart(2,'0')+':'+String(nowParts.minute).padStart(2,'0');
   const requestedDate=requestedLocalDate(message,todayLocal);
@@ -144,7 +207,7 @@ export default async function(req,res){
 - Your output does not grant authorization. Server-side membership checks, row scoping, validation, and rate limits remain mandatory.
 Return exactly one valid JSON object with keys reply, action, task, task_id, changes, and view when needed. Do not wrap JSON in markdown.
 action must be one of: add_task, reschedule_task, complete_task, skip_task, snooze_task, plan_change, open_view, help, clarify.
-For add_task, task must contain title, category, duration_minutes, due_date (YYYY-MM-DD in the user's local calendar), start_time (HH:MM in the user's local clock, or null), and detail. A clear explicit time in the request MUST be preserved exactly; never silently replace it with another time. For a clear request to move/reschedule one existing task, use reschedule_task with task_id from the existing list, and task.due_date/task.start_time for the new local date and time. Ask a brief follow-up if the time is ambiguous. Only use task_id values from the existing task list. Multi-task changes must be proposed and not auto-applied.
+For add_task, task must contain title, category (must be one of: study, lab, lecture, gym, meal, personal; use personal for any other or unknown category), duration_minutes, due_date (YYYY-MM-DD in the user's local calendar), start_time (HH:MM in the user's local clock, or null), and detail. A clear explicit time in the request MUST be preserved exactly; never silently replace it with another time. For a clear request to move/reschedule one existing task, use reschedule_task with task_id from the existing list, and task.due_date/task.start_time for the new local date and time. Ask a brief follow-up if the time is ambiguous. Only use task_id values from the existing task list. Multi-task changes must be proposed and not auto-applied.
 Current local date and time: ${todayLocal} ${localClock}. Timezone: ${timezone}. Use this local date (not UTC) to interpret today/tomorrow/weekday phrases, and use local HH:MM values for requested schedule times.
 Current workspace: ${workspaceId===null?'Personal':('Group workspace '+workspaceId)}. Existing tasks: ${JSON.stringify(tasks)}. User request: ${JSON.stringify(message)}`;
   const parseAssistantJson=(text)=>{
@@ -190,7 +253,8 @@ Current workspace: ${workspaceId===null?'Personal':('Group workspace '+workspace
     const desiredStart=requestedTime.time||modelStart;
     let start=null;
     if(desiredStart){start=localDateTimeToIso(dueDate,desiredStart,timezone);if(!start)return json(res,200,{action:'clarify',reply:'That local time does not exist on the selected date because of a clock change. Please choose another time.'});}
-    const taskValues=[uid,workspaceId,title,String(t.category||'study').slice(0,40),duration,start,dueDate,String(t.detail||'').slice(0,1000),'voice'];
+    const category=normalizeCategory(t.category);
+    const taskValues=[uid,workspaceId,title,category,duration,start,dueDate,String(t.detail||'').slice(0,1000),'voice'];
     const inserted=workspaceId!==null
       ? await db.query('INSERT INTO orbit_tasks(user_id,workspace_id,title,category,duration_minutes,starts_at,due_date,detail,source) SELECT $1,$2,$3,$4,$5,$6::timestamptz,$7::date,$8,$9 FROM orbit_workspace_members m WHERE m.workspace_id=$2 AND m.user_id=$1 RETURNING *',taskValues)
       : await db.query('INSERT INTO orbit_tasks(user_id,workspace_id,title,category,duration_minutes,starts_at,due_date,detail,source) VALUES($1,$2,$3,$4,$5,$6::timestamptz,$7::date,$8,$9) RETURNING *',taskValues);
@@ -223,12 +287,19 @@ Current workspace: ${workspaceId===null?'Personal':('Group workspace '+workspace
     if(!desiredStart)return json(res,200,{action:'clarify',reply:'What exact time should I move '+original.title+' to? For example, 7:30 PM.'});
     const startsAt=localDateTimeToIso(dueDate,desiredStart,timezone);
     if(!startsAt)return json(res,200,{action:'clarify',reply:'That local time does not exist on the selected date because of a clock change. Please choose another time.'});
-    const updated=workspaceId!==null
-      ? await db.query('UPDATE orbit_tasks SET starts_at=$1::timestamptz,due_date=$2::date,updated_at=now() WHERE id=$3 AND workspace_id=$4 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$4 AND m.user_id=$5) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$4 AND (w.owner_id=$5 OR orbit_tasks.user_id=$5)) RETURNING *',[startsAt,dueDate,id,workspaceId,uid])
-      : await db.query('UPDATE orbit_tasks SET starts_at=$1::timestamptz,due_date=$2::date,updated_at=now() WHERE id=$3 AND user_id=$4 AND workspace_id IS NULL RETURNING *',[startsAt,dueDate,id,uid]);
-    if(!updated.rows[0])return json(res,404,{error:'Task not found or could not be moved.'});
-    await db.query('INSERT INTO orbit_notifications(user_id,title,body,kind) VALUES($1,$2,$3,$4)',[uid,'Task rescheduled',updated.rows[0].title,'task']);
-    return json(res,200,{action,task:updated.rows[0],reply:String(parsed.reply||('Moved '+updated.rows[0].title+' to '+dueDate+' at '+desiredStart+'.')).slice(0,500)});
+    return json(res,200,{
+      action:'confirm',
+      proposed:{
+        action:'reschedule_task',
+        task_id:id,
+        title:currentTask.title,
+        due_date:dueDate,
+        start_time:desiredStart,
+        starts_at:startsAt,
+        workspace_id:workspaceId
+      },
+      reply:'Move "'+currentTask.title+'" to '+dueDate+' at '+desiredStart+'? Say yes to confirm, or no to cancel.'
+    });
   }
   if(['complete_task','skip_task','snooze_task'].includes(action)){
     const id=Number(parsed.task_id);if(!Number.isSafeInteger(id)||id<1)return json(res,200,{action:'clarify',reply:'Which task did you mean?'});
@@ -240,21 +311,22 @@ Current workspace: ${workspaceId===null?'Personal':('Group workspace '+workspace
     const mutationKind=action==='complete_task'?'complete':'edit';
     const permission=await canMutateTask(uid,currentTask,workspaceId,mutationKind);
     if(!permission.allowed)return json(res,403,{error:action==='complete_task'?'You can complete only tasks you created or tasks assigned to you. Group owners can complete any group task.':'You can skip or snooze only tasks you created. Group owners can change any group task.'});
-    if(action==='snooze_task'){
-      const {rows}=workspaceId!==null
-        ? await db.query("UPDATE orbit_tasks SET starts_at=COALESCE(starts_at,now())+interval '10 minutes',updated_at=now() WHERE id=$1 AND workspace_id=$2 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$2 AND m.user_id=$3) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$2 AND (w.owner_id=$3 OR orbit_tasks.user_id=$3)) RETURNING *",[id,workspaceId,uid])
-        : await db.query("UPDATE orbit_tasks SET starts_at=COALESCE(starts_at,now())+interval '10 minutes',updated_at=now() WHERE id=$1 AND user_id=$2 AND workspace_id IS NULL RETURNING *",[id,uid]);
-      return rows[0]?json(res,200,{action,task:rows[0],reply:'Snoozed by 10 minutes.'}):json(res,404,{error:'Task not found.'});
-    }
-    const status=action==='complete_task'?'done':'skipped';
-    const {rows}=workspaceId!==null
-      ? await db.query(action==='complete_task'
-        ? 'UPDATE orbit_tasks SET status=$1,updated_at=now() WHERE id=$2 AND workspace_id=$3 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$3 AND m.user_id=$4) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$3 AND (w.owner_id=$4 OR orbit_tasks.user_id=$4 OR orbit_tasks.assigned_to_user_id=$4)) RETURNING *'
-        : 'UPDATE orbit_tasks SET status=$1,updated_at=now() WHERE id=$2 AND workspace_id=$3 AND EXISTS (SELECT 1 FROM orbit_workspace_members m WHERE m.workspace_id=$3 AND m.user_id=$4) AND EXISTS (SELECT 1 FROM orbit_workspaces w WHERE w.id=$3 AND (w.owner_id=$4 OR orbit_tasks.user_id=$4)) RETURNING *',[status,id,workspaceId,uid])
-      : await db.query('UPDATE orbit_tasks SET status=$1,updated_at=now() WHERE id=$2 AND user_id=$3 AND workspace_id IS NULL RETURNING *',[status,id,uid]);
-    if(!rows[0])return json(res,404,{error:'Task not found.'});
-    await db.query('INSERT INTO orbit_notifications(user_id,title,body,kind) VALUES($1,$2,$3,$4)',[uid,status==='done'?'Task completed':'Task skipped',rows[0].title,'task']);
-    return json(res,200,{action,task:rows[0],reply:String(parsed.reply||'Task updated.').slice(0,500)});
+    const promptPrefix = action === 'complete_task'
+      ? ('Mark "' + currentTask.title + '" complete')
+      : action === 'skip_task'
+        ? ('Skip "' + currentTask.title + '"')
+        : ('Snooze "' + currentTask.title + '" by 10 minutes');
+    return json(res,200,{
+      action:'confirm',
+      proposed:{
+        action,
+        task_id:id,
+        title:currentTask.title,
+        ...(action==='snooze_task'?{snooze_minutes:10}:{status:action==='complete_task'?'done':'skipped'}),
+        workspace_id:workspaceId
+      },
+      reply:promptPrefix+'? Say yes to confirm, or no to cancel.'
+    });
   }
   if(action==='plan_change')return json(res,200,{action,reply:String(parsed.reply||'Review the proposed schedule before applying changes.').slice(0,700),changes:Array.isArray(parsed.changes)?parsed.changes.slice(0,50):[]});
   if(action==='open_view')return json(res,200,{action,view:String(parsed.view||'today'),reply:String(parsed.reply||'Opening that view.').slice(0,500)});
